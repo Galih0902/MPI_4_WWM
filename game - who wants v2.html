@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Who Wants to Be a Millionaire</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
+      min-height: 100vh;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    .font-montserrat {
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .light-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .gold-glow-border {
+      border: 2px solid #f59e0b;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+    }
+
+    .wwtbm-shape {
+      clip-path: polygon(4% 0%, 96% 0%, 100% 50%, 96% 100%, 4% 100%, 0% 50%);
+      transition: all 0.25s ease;
+    }
+
+    .wwtbm-btn {
+      background: #ffffff;
+      border: 2px solid #0284c7;
+      color: #0f172a;
+    }
+
+    .wwtbm-btn:hover:not(.disabled) {
+      background: #e0f2fe;
+      border-color: #d97706;
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.4);
+      transform: scale(1.02);
+    }
+
+    .wwtbm-btn.selected {
+      background: #f59e0b !important;
+      border-color: #b45309 !important;
+      color: #ffffff !important;
+      animation: flashOrange 0.5s ease infinite alternate;
+    }
+
+    .wwtbm-btn.correct-ans {
+      background: #16a34a !important;
+      border-color: #15803d !important;
+      color: #ffffff !important;
+      animation: flashGreen 0.6s ease infinite alternate;
+    }
+
+    .wwtbm-btn.wrong-ans {
+      background: #dc2626 !important;
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+      opacity: 0.7;
+    }
+
+    @keyframes flashOrange {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.25); }
+    }
+
+    @keyframes flashGreen {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.2); }
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+  </style>
+</head>
+<body class="relative flex flex-col items-center justify-between min-h-screen p-3 md:p-6">
+
+  <div class="w-full max-w-7xl mx-auto flex flex-col gap-4">
+
+    <!-- HEADER BAR -->
+    <header class="light-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-sky-300">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-400 flex items-center justify-center text-slate-900 font-black text-2xl shadow">
+          💰
+        </div>
+        <div>
+          <h1 class="font-montserrat font-black text-xl md:text-2xl text-slate-800 tracking-wider uppercase">
+            WHO WANTS TO BE A MILLIONAIRE
+          </h1>
+          <p class="text-xs text-sky-600 font-semibold">Media Pembelajaran Interaktif</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btn-toggle-bgm" onclick="toggleBGM()" class="px-3 py-2 rounded-xl bg-indigo-100 border border-indigo-300 text-indigo-900 text-xs font-bold transition hover:bg-indigo-200">
+          🎵 BGM: ON
+        </button>
+        <button onclick="bukaModalPengaturan()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-2 transition hover:scale-105 active:scale-95 shadow">
+          <span>⚙️</span> Pengaturan
+        </button>
+        <button onclick="toggleFullScreen()" class="px-3 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold transition">
+          🖥️ Fullscreen
+        </button>
+        <button id="btn-back-menu" onclick="kembaliKeHome()" class="hidden px-3 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition">
+          🏠 Halaman Utama
+        </button>
+      </div>
+    </header>
+
+    <!-- ==================== HOME / LANDING PAGE ==================== -->
+    <main id="home-panel" class="light-card rounded-3xl p-8 md:p-12 gold-glow-border flex flex-col items-center justify-center text-center gap-6 my-auto min-h-[500px]">
+      
+      <div class="space-y-3">
+        <span class="inline-block px-4 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold rounded-full uppercase tracking-widest">
+          Game Show Edukasi Interaktif
+        </span>
+        <h2 class="font-montserrat font-black text-3xl md:text-5xl text-slate-900 tracking-tight">
+          WHO WANTS TO BE A MILLIONAIRE
+        </h2>
+        <p class="text-sm md:text-base text-slate-600 font-medium">Edisi Pembelajaran Kuis Sekolah Dasar</p>
+      </div>
+
+      <!-- ATRIBUSI PEMBUAT -->
+      <div class="py-3 px-6 bg-sky-50 border border-sky-200 rounded-2xl shadow-sm">
+        <div class="text-[11px] font-bold text-sky-600 uppercase tracking-wider">KARYA / BUATAN:</div>
+        <div class="font-montserrat font-black text-lg md:text-xl text-sky-900 tracking-wide">
+          GALIH RAMANDHA RIZKI, S.KOM
+        </div>
+      </div>
+
+      <!-- TOMBOL MULAI -->
+      <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
+        <button onclick="mulaiGame()" class="px-10 py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-montserrat font-black text-lg tracking-wider shadow-xl shadow-amber-400/40 transition hover:scale-105 active:scale-95 uppercase border-2 border-amber-500">
+          MULAI PERMAINAN 🚀
+        </button>
+        <button onclick="bukaModalPengaturan()" class="px-8 py-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition border border-slate-300">
+          ⚙️ Buka Pengaturan
+        </button>
+      </div>
+
+    </main>
+
+    <!-- ==================== GAME BOARD ==================== -->
+    <section id="game-panel-millionaire" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <!-- Main Stage -->
+      <div class="lg:col-span-3 light-card rounded-3xl p-6 gold-glow-border flex flex-col justify-between min-h-[560px] relative">
+        
+        <!-- Top Controls & Lifelines -->
+        <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-200 pb-4">
+          <div>
+            <div class="text-[10px] text-amber-700 font-bold uppercase tracking-widest">Peserta Tampil</div>
+            <div id="giliran-peserta-milli" class="font-montserrat font-black text-xl text-slate-900">Kelompok Alfa</div>
+            <div id="lives-display-milli" class="flex gap-1 text-rose-500 text-xs mt-0.5">❤️ ❤️ ❤️</div>
+          </div>
+
+          <!-- Lifelines & Game Controls (Pause & Quit) -->
+          <div class="flex items-center gap-2">
+            <button id="lifeline-5050" onclick="useLifeline5050()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
+              50:50
+            </button>
+            <button id="lifeline-audience" onclick="useLifelineAudience()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
+              👥 Penonton
+            </button>
+            <button id="lifeline-switch" onclick="useLifelineSwitch()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
+              🔄 Ganti Soal
+            </button>
+            
+            <!-- Tombol Pause & Quit -->
+            <button id="btn-pause-game" onclick="togglePauseGame()" class="px-3 h-10 rounded-xl bg-amber-500 text-slate-950 border border-amber-600 text-xs font-black hover:bg-amber-400 transition shadow">
+              ⏸️ Pause
+            </button>
+            <button onclick="quitGame()" class="px-3 h-10 rounded-xl bg-rose-600 text-white border border-rose-700 text-xs font-black hover:bg-rose-500 transition shadow">
+              🚪 Quit
+            </button>
+          </div>
+
+          <div id="timer-container" class="flex items-center">
+            <div id="timer-badge-milli" class="w-12 h-12 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center font-montserrat font-black text-xl text-slate-950 shadow">
+              20
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Box -->
+        <div class="flex-1 flex flex-col justify-center my-4 gap-6 relative">
+          
+          <!-- Overlay Pause Mode -->
+          <div id="pause-overlay" class="hidden absolute inset-0 z-20 bg-slate-900/80 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center text-white gap-4">
+            <h3 class="font-montserrat font-black text-2xl text-amber-400">PERMAINAN DIPAUSAN ⏸️</h3>
+            <p class="text-xs text-slate-300">Klik tombol di bawah untuk melanjutkan game</p>
+            <button onclick="togglePauseGame()" class="px-6 py-2.5 rounded-full bg-amber-400 text-slate-950 font-bold text-xs shadow hover:scale-105 transition">
+              ▶️ Lanjutkan Permainan
+            </button>
+          </div>
+
+          <div class="relative bg-gradient-to-b from-sky-900 to-slate-900 border-2 border-amber-400 wwtbm-shape p-6 text-center flex flex-col items-center justify-center shadow-lg">
+            <button onclick="bacaTeksSoalTTS()" class="absolute top-2 right-8 px-3 py-1 rounded-lg bg-amber-400 text-slate-950 text-[11px] font-bold flex items-center gap-1 hover:scale-105 transition">
+              🔊 Bacakan Soal
+            </button>
+            <div id="pertanyaan-text-milli" class="font-montserrat font-extrabold text-base md:text-xl text-white max-w-xl my-3">
+              Pertanyaan...
+            </div>
+          </div>
+
+          <div id="papan-jawaban-milli" class="grid grid-cols-1 sm:grid-cols-2 gap-3 px-2">
+            <!-- Dynamic Options -->
+          </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="flex justify-between items-center border-t border-slate-200 pt-3">
+          <div class="text-xs text-slate-600">
+            Target Hadiah Soal Ini: <span id="target-hadiah-text" class="text-amber-600 font-extrabold">Rp 500.000</span>
+          </div>
+          <button id="btn-lanjut-milli" onclick="lanjutMillionaireBerikutnya()" class="hidden px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs shadow transition hover:scale-105 border border-amber-500">
+            Lanjut Peserta Berikutnya ➔
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Money Ladder & Leaderboard Side Panel -->
+      <aside class="light-card rounded-3xl p-4 border-sky-300 flex flex-col justify-between max-h-[560px] gap-4">
+        
+        <div class="border-b border-slate-200 pb-3">
+          <h3 class="font-montserrat font-extrabold text-xs text-sky-700 text-center pb-2 uppercase tracking-wider flex items-center justify-center gap-1">
+            🏆 PAPAN SKOR KELOMPOK
+          </h3>
+          <div id="leaderboard-realtime" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <!-- Dynamic via JS -->
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-hidden flex flex-col justify-end">
+          <h3 class="font-montserrat font-extrabold text-[11px] text-amber-700 text-center pb-1 uppercase tracking-wider">
+            TANGGA HADIAH
+          </h3>
+          <ul id="money-ladder-list" class="space-y-0.5 text-[10px] font-mono font-bold">
+            <!-- 15 Levels -->
+          </ul>
+        </div>
+
+        <button onclick="downloadSkorCSV()" class="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300">
+          📥 Download Skor (CSV)
+        </button>
+      </aside>
+
+    </section>
+
+  </div>
+
+  <!-- ==================== MODAL PENGATURAN ==================== -->
+  <div id="modal-pengaturan" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 md:p-4">
+    <div class="light-card rounded-3xl gold-glow-border max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+      
+      <!-- Header Modal -->
+      <div class="flex justify-between items-center p-4 md:p-5 border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+        <h3 class="font-montserrat font-black text-base md:text-lg text-slate-900 flex items-center gap-2">
+          ⚙️ PENGATURAN PERMAINAN
+        </h3>
+        <button onclick="tutupModalPengaturan()" class="w-8 h-8 rounded-full bg-slate-200 text-slate-700 font-bold hover:bg-slate-300 flex items-center justify-center transition">
+          ✕
+        </button>
+      </div>
+
+      <!-- Body Modal -->
+      <div class="p-4 md:p-6 overflow-y-auto flex-1 space-y-5">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          
+          <!-- Mode Peserta -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+            <label class="block font-bold text-sky-800 uppercase">👥 Mode Peserta & Nama Kelompok</label>
+            <div class="flex gap-2">
+              <button type="button" id="type-btn-indiv" onclick="setParticipantType('individu')" class="flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 font-bold">
+                Individu
+              </button>
+              <button type="button" id="type-btn-group" onclick="setParticipantType('kelompok')" class="flex-1 py-1.5 rounded-lg border border-sky-500 bg-sky-100 text-sky-800 font-bold">
+                Kelompok / Tim
+              </button>
+            </div>
+            <textarea id="input-peserta-massal" class="w-full h-24 bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-amber-400" placeholder="Kelompok Alfa&#10;Kelompok Beta&#10;Kelompok Gamma"></textarea>
+          </div>
+
+          <!-- Timer & Nyawa & BGM -->
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+            <div>
+              <label class="block font-bold text-rose-800 uppercase mb-1">❤️ Sistem Nyawa (Lives)</label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" id="life-btn-off" onclick="setLivesSetting(0)" class="py-1.5 rounded-lg border border-slate-300 bg-white font-bold">Off</button>
+                <button type="button" id="life-btn-1" onclick="setLivesSetting(1)" class="py-1.5 rounded-lg border border-slate-300 bg-white font-bold">1 ❤️</button>
+                <button type="button" id="life-btn-3" onclick="setLivesSetting(3)" class="py-1.5 rounded-lg border border-rose-400 bg-rose-100 text-rose-800 font-bold">3 ❤️</button>
+                <button type="button" id="life-btn-5" onclick="setLivesSetting(5)" class="py-1.5 rounded-lg border border-slate-300 bg-white font-bold">5 ❤️</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-700 mb-1">⏳ Pengaturan Waktu / Timer:</label>
+              <select id="select-waktu" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold">
+                <option value="0">Tanpa Timer (Fokus Nyawa Sahaja)</option>
+                <option value="15">15 Detik</option>
+                <option value="20" selected>20 Detik</option>
+                <option value="30">30 Detik</option>
+                <option value="60">60 Detik</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="font-bold text-slate-700">🎵 Backsound Game (BGM):</span>
+              <select id="select-bgm" onchange="updateBGMSettings()" class="bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-semibold">
+                <option value="on" selected>Aktif 🎵</option>
+                <option value="off">Mute 🔇</option>
+              </select>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="font-bold text-slate-700">🔊 Suara SFX (Benar/Salah):</span>
+              <select id="select-audio" class="bg-white border border-slate-300 rounded-lg p-1.5 text-xs font-semibold">
+                <option value="on" selected>Aktif 🔊</option>
+                <option value="off">Mute 🔇</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- KELOLA BANK SOAL SECTION -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
+          
+          <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-200 pb-2">
+            <h4 class="font-bold text-amber-800 text-xs md:text-sm">📝 Kelola Bank Soal</h4>
+            <div class="flex gap-2">
+              <button type="button" onclick="acakBankSoalMaster()" class="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px]">🔀 Acak Soal</button>
+              <button type="button" onclick="switchSoalTab('crud')" id="tab-btn-crud" class="px-3 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold text-[11px]">Tambah/Edit Soal</button>
+              <button type="button" onclick="switchSoalTab('import')" id="tab-btn-import" class="px-3 py-1 rounded-lg bg-slate-200 text-slate-700 font-bold text-[11px]">Import Massal</button>
+            </div>
+          </div>
+
+          <!-- TAB 1: FORM SINGLE CRUD -->
+          <div id="tab-soal-crud" class="space-y-3">
+            <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <input type="hidden" id="crud-index" value="-1">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">Pertanyaan:</label>
+                <input type="text" id="crud-pertanyaan" class="w-full border border-slate-300 rounded p-1.5 focus:outline-none focus:border-amber-400" placeholder="Tulis pertanyaan di sini...">
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <input type="text" id="crud-opt-a" class="border border-slate-300 rounded p-1.5" placeholder="Opsi A">
+                <input type="text" id="crud-opt-b" class="border border-slate-300 rounded p-1.5" placeholder="Opsi B">
+                <input type="text" id="crud-opt-c" class="border border-slate-300 rounded p-1.5" placeholder="Opsi C">
+                <input type="text" id="crud-opt-d" class="border border-slate-300 rounded p-1.5" placeholder="Opsi D">
+              </div>
+              <div class="flex flex-wrap justify-between items-center gap-2 pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-semibold text-slate-600">Kunci Jawaban:</span>
+                  <select id="crud-kunci" class="border border-slate-300 rounded p-1 font-bold">
+                    <option value="0">A</option>
+                    <option value="1">B</option>
+                    <option value="2">C</option>
+                    <option value="3">D</option>
+                  </select>
+                </div>
+                <div class="flex gap-2">
+                  <button type="button" onclick="resetFormCRUD()" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 rounded text-slate-700">Reset</button>
+                  <button type="button" onclick="simpanSoalCRUD()" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded">Simpan / Update</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: IMPORT MASSAL -->
+          <div id="tab-soal-import" class="hidden space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="block text-[11px] font-bold text-slate-600">Import Massal Teks Sederhana:</label>
+              <button type="button" onclick="isiContohImport()" class="text-[11px] text-sky-600 font-semibold hover:underline">📋 Isi Contoh Format</button>
+            </div>
+            <div class="text-[10px] text-slate-500">Format per baris: <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-800">Pertanyaan ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? Kunci(A/B/C/D)</code></div>
+            <textarea id="input-soal-massal" class="w-full h-28 bg-white border border-slate-300 rounded-xl p-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-amber-400" placeholder="Pertanyaan... ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? A"></textarea>
+            <button type="button" onclick="prosesImportMassal()" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs">Proses Import Ke Bank Soal</button>
+          </div>
+
+          <!-- TABEL DAFTAR SOAL & AKSIMASSAL (PILIH SEMUA / HAPUS) -->
+          <div class="space-y-1 pt-1">
+            <div class="flex justify-between items-center text-[11px] font-bold text-slate-600 mb-1">
+              <span>Daftar Soal Tersimpan:</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="pilihSemuaSoal(true)" class="text-sky-600 hover:underline">☑️ Pilih Semua</button>
+                <span>|</span>
+                <button type="button" onclick="pilihSemuaSoal(false)" class="text-slate-500 hover:underline">Uncheck All</button>
+                <span>|</span>
+                <button type="button" onclick="hapusSoalTerpilih()" class="text-rose-600 hover:underline font-bold">🗑️ Hapus Soal Terpilih</button>
+              </div>
+            </div>
+            <div class="max-h-40 overflow-y-auto border border-slate-200 rounded-xl bg-white">
+              <table class="w-full text-left text-[11px] text-slate-700">
+                <thead class="bg-slate-100 uppercase sticky top-0 border-b border-slate-200">
+                  <tr>
+                    <th class="p-2 w-8 text-center"><input type="checkbox" id="check-all-soal" onchange="toggleCheckAll(this)"></th>
+                    <th class="p-2 w-8">No</th>
+                    <th class="p-2">Pertanyaan</th>
+                    <th class="p-2 w-16">Kunci</th>
+                    <th class="p-2 w-24 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tabel-crud-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-[11px] pt-1">
+            <span id="info-total-soal" class="font-bold text-slate-600">Total Soal: 0</span>
+            <button type="button" onclick="resetKeSoalDefault()" class="text-rose-600 font-bold hover:underline">Reset Ke Soal Bawaan</button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Footer Modal -->
+      <div class="p-4 border-t border-slate-200 bg-white/80 backdrop-blur-sm sticky bottom-0 text-right z-10">
+        <button onclick="tutupModalPengaturan()" class="px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow transition hover:scale-105">
+          Simpan & Tutup Pengaturan
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- AUDIENCE POLL MODAL -->
+  <div id="modal-audience" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="light-card rounded-3xl p-6 gold-glow-border max-w-md w-full text-center space-y-4">
+      <h3 class="font-montserrat font-black text-lg text-slate-900">📊 HASIL VOTING PENONTON</h3>
+      <div id="audience-chart" class="space-y-2 py-2 text-xs font-bold text-left"></div>
+      <button onclick="closeAudienceModal()" class="px-6 py-2 rounded-full bg-amber-400 text-slate-950 font-bold text-xs">
+        Tutup
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* ==================== AUDIO LOKAL .MP3 ==================== */
+    const audioBenar = new Audio('benar.mp3');
+    const audioSalah = new Audio('salah.mp3');
+    const audioTick = new Audio('tick.mp3');
+    const audioBGM = new Audio('bgm.mp3');
+    audioBGM.loop = true;
+    audioBGM.volume = 0.4;
+
+    let isBGMEnabled = true;
+
+    function playBGM() {
+      if (isBGMEnabled && !isGamePaused) {
+        audioBGM.play().catch(e => console.log("User interaction required for BGM:", e));
+      }
+    }
+
+    function stopBGM() {
+      audioBGM.pause();
+    }
+
+    function toggleBGM() {
+      isBGMEnabled = !isBGMEnabled;
+      const btn = document.getElementById('btn-toggle-bgm');
+      const select = document.getElementById('select-bgm');
+      
+      if (isBGMEnabled) {
+        btn.innerText = "🎵 BGM: ON";
+        btn.className = "px-3 py-2 rounded-xl bg-indigo-100 border border-indigo-300 text-indigo-900 text-xs font-bold transition hover:bg-indigo-200";
+        select.value = "on";
+        playBGM();
+      } else {
+        btn.innerText = "🎵 BGM: OFF";
+        btn.className = "px-3 py-2 rounded-xl bg-slate-100 border border-slate-300 text-slate-500 text-xs font-bold transition";
+        select.value = "off";
+        stopBGM();
+      }
+    }
+
+    function updateBGMSettings() {
+      const selectVal = document.getElementById('select-bgm').value;
+      if (selectVal === 'on' && !isBGMEnabled) {
+        toggleBGM();
+      } else if (selectVal === 'off' && isBGMEnabled) {
+        toggleBGM();
+      }
+    }
+
+    function playSoundCorrect() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioBenar.currentTime = 0;
+      audioBenar.play().catch(e => console.log("Gagal memutar audio benar:", e));
+    }
+
+    function playSoundWrong() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioSalah.currentTime = 0;
+      audioSalah.play().catch(e => console.log("Gagal memutar audio salah:", e));
+    }
+
+    function playSoundTick() {
+      if (document.getElementById('select-audio').value === 'off' || isGamePaused) return;
+      audioTick.currentTime = 0;
+      audioTick.play().catch(e => console.log("Gagal memutar audio tick:", e));
+    }
+
+    function stopSoundTick() {
+      audioTick.pause();
+      audioTick.currentTime = 0;
+    }
+
+    /* ==================== GLOBAL STATE ==================== */
+    let participantType = 'kelompok'; 
+    let livesSetting = 3; 
+
+    let daftarPeserta = [];
+    let giliranPesertaIndex = 0;
+    let timerInterval = null;
+    let durasiSoalSetting = 20;
+    let sisaWaktu = 20;
+    let sudahMenjawab = false;
+    let isGamePaused = false;
+    let dataSoal = [];
+    let indexSoalAktif = 0;
+    let shuffledPilihanSaatIni = []; 
+    let jawabanBenarShuffledIndex = 0; 
+
+    const abjad = ['A', 'B', 'C', 'D'];
+
+    const moneyLadderValues = [
+      500000, 1000000, 2000000, 3000000, 5000000,
+      10000000, 15000000, 25000000, 50000000, 100000000,
+      150000000, 250000000, 500000000, 750000000, 1000000000
+    ];
+
+    const moneyLadder = [
+      "Rp 500.000", "Rp 1.000.000", "Rp 2.000.000", "Rp 3.000.000", "Rp 5.000.000",
+      "Rp 10.000.000", "Rp 15.000.000", "Rp 25.000.000", "Rp 50.000.000", "Rp 100.000.000",
+      "Rp 150.000.000", "Rp 250.000.000", "Rp 500.000.000", "Rp 750.000.000", "Rp 1.000.000.000"
+    ];
+
+    const defaultSoalKomputer = [
+      { pertanyaan: "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah...", pilihan: ["Microphone", "Speaker", "Monitor", "Printer"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat input yang merespons ketukan jari pengguna adalah...", pilihan: ["Keyboard", "Monitor", "Speaker", "CPU"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat keras yang mendeteksi gerakan kursor di layar adalah...", pilihan: ["Mouse", "Scanner", "Printer", "RAM"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat keras yang berfungsi menangkap gambar secara digital adalah...", pilihan: ["Webcam", "Speaker", "CPU", "Harddisk"], jawabanBenar: 0 },
+      { pertanyaan: "Bagian komputer yang bertugas mengolah data utama adalah...", pilihan: ["CPU", "Mouse", "Keyboard", "Monitor"], jawabanBenar: 0 },
+      { pertanyaan: "Komponen yang berfungsi menyimpan data sementara saat komputer menyala adalah...", pilihan: ["RAM", "Harddisk", "Printer", "Speaker"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat proses yang memproses hasil berupa gambar/grafik adalah...", pilihan: ["VGA Card", "Sound Card", "Microphone", "Webcam"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat output yang berfungsi menampilkan gambar dan teks adalah...", pilihan: ["Monitor", "Keyboard", "Mouse", "Microphone"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat output yang berfungsi mengeluarkan suara adalah...", pilihan: ["Speaker", "Webcam", "Scanner", "Harddisk"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat output yang digunakan untuk mencetak dokumen dan objek adalah...", pilihan: ["Printer", "Mouse", "Keyboard", "Scanner"], jawabanBenar: 0 },
+      { pertanyaan: "Perangkat yang berfungsi sebagai tempat penyimpanan data permanen adalah...", pilihan: ["Harddisk", "RAM", "CPU", "VGA Card"], jawabanBenar: 0 }
+    ];
+
+    let bankSoalMaster = [];
+
+    /* ==================== CRUD & IMPORT SOAL ==================== */
+    function loadBankSoal() {
+      const stored = localStorage.getItem('millionaire_bank_soal');
+      if (stored) {
+        bankSoalMaster = JSON.parse(stored);
+      } else {
+        bankSoalMaster = JSON.parse(JSON.stringify(defaultSoalKomputer));
+        simpanBankSoalKeStorage();
+      }
+      renderTabelCRUD();
+    }
+
+    function simpanBankSoalKeStorage() {
+      localStorage.setItem('millionaire_bank_soal', JSON.stringify(bankSoalMaster));
+    }
+
+    function acakBankSoalMaster() {
+      for (let i = bankSoalMaster.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bankSoalMaster[i], bankSoalMaster[j]] = [bankSoalMaster[j], bankSoalMaster[i]];
+      }
+      simpanBankSoalKeStorage();
+      renderTabelCRUD();
+      alert("Urutan soal berhasil diacak!");
+    }
+
+    function renderTabelCRUD() {
+      const tbody = document.getElementById('tabel-crud-body');
+      tbody.innerHTML = '';
+      bankSoalMaster.forEach((soal, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 border-t border-slate-100 text-center">
+            <input type="checkbox" class="checkbox-soal-item" value="${idx}">
+          </td>
+          <td class="p-2 border-t border-slate-100">${idx + 1}</td>
+          <td class="p-2 border-t border-slate-100 font-semibold truncate max-w-[180px]">${soal.pertanyaan}</td>
+          <td class="p-2 border-t border-slate-100 text-amber-600 font-bold">${abjad[soal.jawabanBenar]}</td>
+          <td class="p-2 border-t border-slate-100 text-center space-x-1">
+            <button type="button" onclick="editSoalCRUD(${idx})" class="px-2 py-0.5 rounded bg-sky-600 text-white text-[10px]">Edit</button>
+            <button type="button" onclick="hapusSoalCRUD(${idx})" class="px-2 py-0.5 rounded bg-rose-600 text-white text-[10px]">Hapus</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('info-total-soal').innerText = `Total Soal: ${bankSoalMaster.length}`;
+      document.getElementById('check-all-soal').checked = false;
+    }
+
+    function toggleCheckAll(master) {
+      document.querySelectorAll('.checkbox-soal-item').forEach(cb => cb.checked = master.checked);
+    }
+
+    function pilihSemuaSoal(status) {
+      document.querySelectorAll('.checkbox-soal-item').forEach(cb => cb.checked = status);
+      document.getElementById('check-all-soal').checked = status;
+    }
+
+    function hapusSoalTerpilih() {
+      const selectedCBs = Array.from(document.querySelectorAll('.checkbox-soal-item:checked'));
+      if (selectedCBs.length === 0) {
+        alert("Pilih minimal satu soal yang ingin dihapus.");
+        return;
+      }
+
+      if (confirm(`Hapus ${selectedCBs.length} soal yang dipilih?`)) {
+        const indexes = selectedCBs.map(cb => parseInt(cb.value)).sort((a, b) => b - a);
+        indexes.forEach(idx => bankSoalMaster.splice(idx, 1));
+        simpanBankSoalKeStorage();
+        renderTabelCRUD();
+        resetFormCRUD();
+      }
+    }
+
+    function switchSoalTab(tabName) {
+      if (tabName === 'crud') {
+        document.getElementById('tab-soal-crud').classList.remove('hidden');
+        document.getElementById('tab-soal-import').classList.add('hidden');
+        document.getElementById('tab-btn-crud').className = "px-3 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold text-[11px]";
+        document.getElementById('tab-btn-import').className = "px-3 py-1 rounded-lg bg-slate-200 text-slate-700 font-bold text-[11px]";
+      } else {
+        document.getElementById('tab-soal-crud').classList.add('hidden');
+        document.getElementById('tab-soal-import').classList.remove('hidden');
+        document.getElementById('tab-btn-crud').className = "px-3 py-1 rounded-lg bg-slate-200 text-slate-700 font-bold text-[11px]";
+        document.getElementById('tab-btn-import').className = "px-3 py-1 rounded-lg bg-amber-400 text-slate-950 font-bold text-[11px]";
+      }
+    }
+
+    function simpanSoalCRUD() {
+      const pert = document.getElementById('crud-pertanyaan').value.trim();
+      const a = document.getElementById('crud-opt-a').value.trim();
+      const b = document.getElementById('crud-opt-b').value.trim();
+      const c = document.getElementById('crud-opt-c').value.trim();
+      const d = document.getElementById('crud-opt-d').value.trim();
+      const kunci = parseInt(document.getElementById('crud-kunci').value);
+      const idxEdit = parseInt(document.getElementById('crud-index').value);
+
+      if (!pert || !a || !b || !c || !d) {
+        alert("Harap isi pertanyaan dan semua opsi A-D.");
+        return;
+      }
+
+      const objSoal = { pertanyaan: pert, pilihan: [a, b, c, d], jawabanBenar: kunci };
+      if (idxEdit >= 0) {
+        bankSoalMaster[idxEdit] = objSoal;
+      } else {
+        bankSoalMaster.push(objSoal);
+      }
+
+      simpanBankSoalKeStorage();
+      renderTabelCRUD();
+      resetFormCRUD();
+    }
+
+    function editSoalCRUD(index) {
+      switchSoalTab('crud');
+      const s = bankSoalMaster[index];
+      document.getElementById('crud-index').value = index;
+      document.getElementById('crud-pertanyaan').value = s.pertanyaan;
+      document.getElementById('crud-opt-a').value = s.pilihan[0];
+      document.getElementById('crud-opt-b').value = s.pilihan[1];
+      document.getElementById('crud-opt-c').value = s.pilihan[2];
+      document.getElementById('crud-opt-d').value = s.pilihan[3];
+      document.getElementById('crud-kunci').value = s.jawabanBenar;
+    }
+
+    function hapusSoalCRUD(index) {
+      if (confirm(`Hapus soal #${index + 1}?`)) {
+        bankSoalMaster.splice(index, 1);
+        simpanBankSoalKeStorage();
+        renderTabelCRUD();
+        resetFormCRUD();
+      }
+    }
+
+    function resetFormCRUD() {
+      document.getElementById('crud-index').value = "-1";
+      document.getElementById('crud-pertanyaan').value = "";
+      document.getElementById('crud-opt-a').value = "";
+      document.getElementById('crud-opt-b').value = "";
+      document.getElementById('crud-opt-c').value = "";
+      document.getElementById('crud-opt-d').value = "";
+      document.getElementById('crud-kunci').value = "0";
+    }
+
+    function isiContohImport() {
+      document.getElementById('input-soal-massal').value = 
+        "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah... ? Microphone ? Speaker ? Monitor ? Printer ? A\n" +
+        "Perangkat input yang merespons ketukan jari pengguna adalah... ? Keyboard ? Monitor ? Speaker ? CPU ? A\n" +
+        "Perangkat keras yang mendeteksi gerakan kursor di layar adalah... ? Mouse ? Scanner ? Printer ? RAM ? A\n" +
+        "Perangkat keras yang berfungsi menangkap gambar secara digital adalah... ? Webcam ? Speaker ? CPU ? Harddisk ? A\n" +
+        "Bagian komputer yang bertugas mengolah data utama adalah... ? CPU ? Mouse ? Keyboard ? Monitor ? A\n" +
+        "Komponen yang berfungsi menyimpan data sementara saat komputer menyala adalah... ? RAM ? Harddisk ? Printer ? Speaker ? A\n" +
+        "Perangkat proses yang memproses hasil berupa gambar/grafik adalah... ? VGA Card ? Sound Card ? Microphone ? Webcam ? A\n" +
+        "Perangkat output yang berfungsi menampilkan gambar dan teks adalah... ? Monitor ? Keyboard ? Mouse ? Microphone ? A\n" +
+        "Perangkat output yang berfungsi mengeluarkan suara adalah... ? Speaker ? Webcam ? Scanner ? Harddisk ? A\n" +
+        "Perangkat output yang digunakan untuk mencetak dokumen dan objek adalah... ? Printer ? Mouse ? Keyboard ? Scanner ? A\n" +
+        "Perangkat yang berfungsi sebagai tempat penyimpanan data permanen adalah... ? Harddisk ? RAM ? CPU ? VGA Card ? A";
+    }
+
+    function prosesImportMassal() {
+      const teks = document.getElementById('input-soal-massal').value.trim();
+      if (!teks) return;
+
+      let count = 0;
+      teks.split('\n').forEach(baris => {
+        const parts = baris.split('?').map(p => p.trim());
+        if (parts.length >= 6) {
+          let keyIndex = abjad.indexOf(parts[5].toUpperCase());
+          if (keyIndex === -1) keyIndex = 0;
+          bankSoalMaster.push({
+            pertanyaan: parts[0],
+            pilihan: [parts[1], parts[2], parts[3], parts[4]],
+            jawabanBenar: keyIndex
+          });
+          count++;
+        }
+      });
+
+      if (count > 0) {
+        simpanBankSoalKeStorage();
+        renderTabelCRUD();
+        document.getElementById('input-soal-massal').value = '';
+        alert(`Berhasil mengimpor ${count} soal baru!`);
+      } else {
+        alert("Format import belum sesuai. Gunakan simbol '?' sebagai pemisah.");
+      }
+    }
+
+    function resetKeSoalDefault() {
+      if (confirm("Reset semua soal ke bawaan default?")) {
+        bankSoalMaster = JSON.parse(JSON.stringify(defaultSoalKomputer));
+        simpanBankSoalKeStorage();
+        renderTabelCRUD();
+        resetFormCRUD();
+      }
+    }
+
+    /* ==================== MODAL & NAVIGATION ==================== */
+    function bukaModalPengaturan() {
+      document.getElementById('modal-pengaturan').classList.remove('hidden');
+    }
+
+    function tutupModalPengaturan() {
+      document.getElementById('modal-pengaturan').classList.add('hidden');
+    }
+
+    function setParticipantType(type) {
+      participantType = type;
+      document.getElementById('type-btn-indiv').className = type === 'individu'
+        ? 'flex-1 py-1.5 rounded-lg border border-sky-500 bg-sky-100 text-sky-800 font-bold'
+        : 'flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 font-bold';
+      document.getElementById('type-btn-group').className = type === 'kelompok'
+        ? 'flex-1 py-1.5 rounded-lg border border-sky-500 bg-sky-100 text-sky-800 font-bold'
+        : 'flex-1 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-600 font-bold';
+    }
+
+    function setLivesSetting(val) {
+      livesSetting = val;
+      [0, 1, 3, 5].forEach(num => {
+        const btn = document.getElementById(`life-btn-${num === 0 ? 'off' : num}`);
+        btn.className = (num === val)
+          ? 'py-1.5 rounded-lg border border-rose-400 bg-rose-100 text-rose-800 font-bold'
+          : 'py-1.5 rounded-lg border border-slate-300 bg-white font-bold';
+      });
+    }
+
+    /* ==================== PAUSE & QUIT GAME ==================== */
+    function togglePauseGame() {
+      isGamePaused = !isGamePaused;
+      const pauseOverlay = document.getElementById('pause-overlay');
+      const btnPause = document.getElementById('btn-pause-game');
+
+      if (isGamePaused) {
+        pauseOverlay.classList.remove('hidden');
+        btnPause.innerText = "▶️ Resume";
+        stopBGM();
+        stopSoundTick();
+      } else {
+        pauseOverlay.classList.add('hidden');
+        btnPause.innerText = "⏸️ Pause";
+        playBGM();
+      }
+    }
+
+    function quitGame() {
+      if (confirm("Yakin ingin keluar permainan? Progres aktif akan dihentikan.")) {
+        isGamePaused = false;
+        document.getElementById('pause-overlay').classList.add('hidden');
+        document.getElementById('btn-pause-game').innerText = "⏸️ Pause";
+        kembaliKeHome();
+      }
+    }
+
+    /* ==================== GAME CONTROL ==================== */
+    function mulaiGame() {
+      durasiSoalSetting = parseInt(document.getElementById('select-waktu').value);
+
+      const inputPeserta = document.getElementById('input-peserta-massal').value.trim();
+      daftarPeserta = [];
+      if (inputPeserta.length > 0) {
+        inputPeserta.split('\n').map(s => s.trim()).filter(s => s.length > 0).forEach(nama => {
+          daftarPeserta.push({ 
+            nama: nama, skor: 0, level: 0, lives: livesSetting, status: 'aktif',
+            lifelines: { '5050': true, 'audience': true, 'switch': true }
+          });
+        });
+      }
+      if (daftarPeserta.length === 0) {
+        daftarPeserta = [
+          { nama: "Kelompok Alfa", skor: 0, level: 0, lives: livesSetting, status: 'aktif', lifelines: { '5050': true, 'audience': true, 'switch': true } },
+          { nama: "Kelompok Beta", skor: 0, level: 0, lives: livesSetting, status: 'aktif', lifelines: { '5050': true, 'audience': true, 'switch': true } }
+        ];
+      }
+
+      dataSoal = JSON.parse(JSON.stringify(bankSoalMaster));
+      for (let i = dataSoal.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [dataSoal[i], dataSoal[j]] = [dataSoal[j], dataSoal[i]];
+      }
+
+      giliranPesertaIndex = 0;
+      indexSoalAktif = 0;
+      isGamePaused = false;
+
+      document.getElementById('home-panel').classList.add('hidden');
+      document.getElementById('btn-back-menu').classList.remove('hidden');
+      document.getElementById('game-panel-millionaire').classList.remove('hidden');
+
+      playBGM();
+      loadMillionaireQuestion();
+    }
+
+    function getPesertaAktif() {
+      return daftarPeserta[giliranPesertaIndex % daftarPeserta.length];
+    }
+
+    function renderHearts(count) {
+      if (livesSetting === 0) return `<span class="text-xs text-slate-400">Nyawa Nonaktif</span>`;
+      let hearts = '';
+      for (let i = 0; i < count; i++) hearts += '❤️ ';
+      return hearts || '<span class="text-xs text-rose-600 font-bold">TERELIMINASI ❌</span>';
+    }
+
+    function formatRupiahSingkat(val) {
+      if (val >= 1000000000) return (val / 1000000000) + ' M';
+      if (val >= 1000000) return (val / 1000000) + ' Jt';
+      if (val >= 1000) return (val / 1000) + ' Rb';
+      return val;
+    }
+
+    function updateLeaderboardRealtime() {
+      const container = document.getElementById('leaderboard-realtime');
+      container.innerHTML = '';
+      const sorted = [...daftarPeserta].sort((a, b) => b.skor - a.skor);
+      const activeP = getPesertaAktif();
+
+      sorted.forEach((p, idx) => {
+        const isCurrent = p.nama === activeP.nama;
+        const div = document.createElement('div');
+        div.className = `p-2 rounded-xl border flex justify-between items-center text-[11px] font-bold ${isCurrent ? 'bg-amber-100 border-amber-400 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+        div.innerHTML = `
+          <div class="truncate max-w-[100px]">
+            <span class="text-amber-700 mr-1">#${idx + 1}</span>
+            <span>${p.nama}</span>
+          </div>
+          <div class="text-right">
+            <div class="text-amber-700">Rp ${formatRupiahSingkat(p.skor)}</div>
+            <div class="text-[9px] text-slate-500">Lvl ${p.level + 1}</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      localStorage.setItem('millionaire_papan_skor', JSON.stringify(sorted));
+    }
+
+    function renderMoneyLadderUI() {
+      const list = document.getElementById('money-ladder-list');
+      list.innerHTML = '';
+      const activeP = getPesertaAktif();
+
+      for (let i = 14; i >= 0; i--) {
+        const li = document.createElement('li');
+        const isCurrent = i === activeP.level;
+        const isSafe = i === 4 || i === 9 || i === 14;
+        li.className = `p-1 rounded flex justify-between items-center ${isCurrent ? 'bg-amber-400 text-slate-950 font-black scale-105 shadow' : 'bg-slate-100 text-slate-600'} ${isSafe && !isCurrent ? 'text-amber-700 font-bold' : ''}`;
+        li.innerHTML = `
+          <span>Lvl ${i + 1}</span>
+          <span>${moneyLadder[i]}</span>
+        `;
+        list.appendChild(li);
+      }
+    }
+
+    function loadMillionaireQuestion() {
+      if (indexSoalAktif >= dataSoal.length) indexSoalAktif = 0;
+      const soal = dataSoal[indexSoalAktif];
+      const p = getPesertaAktif();
+
+      document.getElementById('giliran-peserta-milli').innerText = p.nama;
+      document.getElementById('lives-display-milli').innerHTML = renderHearts(p.lives);
+      document.getElementById('target-hadiah-text').innerText = moneyLadder[p.level];
+      document.getElementById('pertanyaan-text-milli').innerText = soal.pertanyaan;
+      document.getElementById('btn-lanjut-milli').classList.add('hidden');
+      sudahMenjawab = false;
+
+      // LOGIKA ACAK OPSI JAWABAN
+      const teksJawabanBenar = soal.pilihan[soal.jawabanBenar];
+      let arrayPilihan = [...soal.pilihan];
+      for (let i = arrayPilihan.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arrayPilihan[i], arrayPilihan[j]] = [arrayPilihan[j], arrayPilihan[i]];
+      }
+      shuffledPilihanSaatIni = arrayPilihan;
+      jawabanBenarShuffledIndex = arrayPilihan.indexOf(teksJawabanBenar);
+
+      document.getElementById('lifeline-5050').disabled = !p.lifelines['5050'];
+      document.getElementById('lifeline-5050').style.opacity = p.lifelines['5050'] ? '1' : '0.3';
+      document.getElementById('lifeline-audience').disabled = !p.lifelines['audience'];
+      document.getElementById('lifeline-audience').style.opacity = p.lifelines['audience'] ? '1' : '0.3';
+      document.getElementById('lifeline-switch').disabled = !p.lifelines['switch'];
+      document.getElementById('lifeline-switch').style.opacity = p.lifelines['switch'] ? '1' : '0.3';
+
+      const board = document.getElementById('papan-jawaban-milli');
+      board.innerHTML = '';
+      shuffledPilihanSaatIni.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.id = `milli-opt-${idx}`;
+        btn.className = `wwtbm-shape wwtbm-btn p-4 text-left flex items-center gap-3 font-bold text-xs md:text-sm cursor-pointer`;
+        btn.onclick = () => pilihJawabanMilli(idx);
+        btn.innerHTML = `
+          <span class="text-amber-600 font-extrabold">${abjad[idx]}:</span>
+          <span>${optText}</span>
+        `;
+        board.appendChild(btn);
+      });
+
+      renderMoneyLadderUI();
+      updateLeaderboardRealtime();
+
+      if (durasiSoalSetting > 0) {
+        document.getElementById('timer-container').classList.remove('hidden');
+        startTimer(durasiSoalSetting, 'timer-badge-milli', () => kunciJawabanMilli(-1));
+      } else {
+        document.getElementById('timer-container').classList.add('hidden');
+        clearInterval(timerInterval);
+        stopSoundTick();
+      }
+    }
+
+    function pilihJawabanMilli(idx) {
+      if (sudahMenjawab || isGamePaused) return;
+      clearInterval(timerInterval);
+      stopSoundTick();
+      sudahMenjawab = true;
+
+      if (isBGMEnabled) {
+        audioBGM.volume = 0.15;
+      }
+
+      const btn = document.getElementById(`milli-opt-${idx}`);
+      if (btn) btn.classList.add('selected');
+
+      setTimeout(() => {
+        kunciJawabanMilli(idx);
+      }, 2500);
+    }
+
+    function kunciJawabanMilli(pilihanIdx) {
+      const p = getPesertaAktif();
+
+      shuffledPilihanSaatIni.forEach((_, idx) => {
+        const btn = document.getElementById(`milli-opt-${idx}`);
+        if (!btn) return;
+        btn.classList.remove('selected');
+        if (idx === jawabanBenarShuffledIndex) {
+          btn.classList.add('correct-ans');
+        } else if (idx === pilihanIdx) {
+          btn.classList.add('wrong-ans');
+        } else {
+          btn.style.opacity = '0.3';
+        }
+      });
+
+      if (isBGMEnabled) {
+        audioBGM.volume = 0.4;
+      }
+
+      if (pilihanIdx === jawabanBenarShuffledIndex) {
+        playSoundCorrect();
+        p.skor += moneyLadderValues[p.level];
+        if (p.level < 14) p.level++;
+      } else {
+        playSoundWrong();
+        if (livesSetting > 0) p.lives--;
+      }
+
+      updateLeaderboardRealtime();
+      document.getElementById('btn-lanjut-milli').classList.remove('hidden');
+    }
+
+    function lanjutMillionaireBerikutnya() {
+      indexSoalAktif++;
+      giliranPesertaIndex++;
+      loadMillionaireQuestion();
+    }
+
+    /* LIFELINES */
+    function useLifeline5050() {
+      const p = getPesertaAktif();
+      if (!p.lifelines['5050'] || sudahMenjawab || isGamePaused) return;
+      p.lifelines['5050'] = false;
+      document.getElementById('lifeline-5050').style.opacity = '0.3';
+
+      let wrongIndexes = [0, 1, 2, 3].filter(idx => idx !== jawabanBenarShuffledIndex);
+      wrongIndexes.sort(() => Math.random() - 0.5);
+
+      document.getElementById(`milli-opt-${wrongIndexes[0]}`).style.visibility = 'hidden';
+      document.getElementById(`milli-opt-${wrongIndexes[1]}`).style.visibility = 'hidden';
+    }
+
+    function useLifelineAudience() {
+      const p = getPesertaAktif();
+      if (!p.lifelines['audience'] || sudahMenjawab || isGamePaused) return;
+      p.lifelines['audience'] = false;
+      document.getElementById('lifeline-audience').style.opacity = '0.3';
+
+      let correctPct = Math.floor(Math.random() * 30) + 50; 
+      let remain = 100 - correctPct;
+
+      let pcts = [0, 0, 0, 0];
+      pcts[jawabanBenarShuffledIndex] = correctPct;
+
+      [0, 1, 2, 3].forEach(idx => {
+        if (idx !== jawabanBenarShuffledIndex) {
+          let chunk = Math.floor(Math.random() * remain);
+          pcts[idx] = chunk;
+          remain -= chunk;
+        }
+      });
+
+      const chart = document.getElementById('audience-chart');
+      chart.innerHTML = '';
+      [0, 1, 2, 3].forEach(idx => {
+        chart.innerHTML += `
+          <div>
+            <div class="flex justify-between mb-1 text-slate-700">
+              <span>Opsi ${abjad[idx]}</span>
+              <span>${pcts[idx]}%</span>
+            </div>
+            <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full bg-amber-400" style="width: ${pcts[idx]}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('modal-audience').classList.remove('hidden');
+    }
+
+    function closeAudienceModal() {
+      document.getElementById('modal-audience').classList.add('hidden');
+    }
+
+    function useLifelineSwitch() {
+      const p = getPesertaAktif();
+      if (!p.lifelines['switch'] || sudahMenjawab || isGamePaused) return;
+      p.lifelines['switch'] = false;
+      document.getElementById('lifeline-switch').style.opacity = '0.3';
+
+      indexSoalAktif++;
+      loadMillionaireQuestion();
+    }
+
+    /* UTILITIES */
+    function startTimer(seconds, elementId, onTimeUp) {
+      clearInterval(timerInterval);
+      stopSoundTick();
+      sisaWaktu = seconds;
+      document.getElementById(elementId).innerText = sisaWaktu;
+
+      timerInterval = setInterval(() => {
+        if (isGamePaused) return;
+
+        sisaWaktu--;
+        document.getElementById(elementId).innerText = sisaWaktu;
+        
+        if (sisaWaktu > 0) {
+          playSoundTick();
+        } else {
+          clearInterval(timerInterval);
+          stopSoundTick();
+          if (onTimeUp) onTimeUp();
+        }
+      }, 1000);
+    }
+
+    function bacaTeksSoalTTS() {
+      const questionText = document.getElementById('pertanyaan-text-milli').innerText;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(questionText);
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function kembaliKeHome() {
+      if (confirm("Kembali ke Halaman Utama? Progres game aktif akan direset.")) {
+        clearInterval(timerInterval);
+        stopSoundTick();
+        stopBGM();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        
+        document.getElementById('game-panel-millionaire').classList.add('hidden');
+        document.getElementById('btn-back-menu').classList.add('hidden');
+        document.getElementById('home-panel').classList.remove('hidden');
+      }
+    }
+
+    function downloadSkorCSV() {
+      if (daftarPeserta.length === 0) return;
+      const sorted = [...daftarPeserta].sort((a, b) => b.skor - a.skor);
+      let csv = "data:text/csv;charset=utf-8,Peringkat,Nama Kelompok/Peserta,Level Tercapai,Total Poin (Rp),Sisa Nyawa\n";
+      sorted.forEach((p, idx) => {
+        csv += `${idx + 1},"${p.nama}",Level ${p.level + 1},${p.skor},${p.lives}\n`;
+      });
+      const encoded = encodeURI(csv);
+      const link = document.createElement("a");
+      link.setAttribute("href", encoded);
+      link.setAttribute("download", `papan_skor_millionaire_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = function() {
+      loadBankSoal();
+    };
+  </script>
+</body>
+</html>
