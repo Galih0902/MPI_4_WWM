@@ -79,6 +79,44 @@
       opacity: 0.7;
     }
 
+    /* Professional Lifeline Button Styles */
+    .lifeline-btn {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border: 1px solid #38bdf8;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .lifeline-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(2, 132, 199, 0.4);
+      border-color: #7dd3fc;
+    }
+
+    .lifeline-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .lifeline-btn:disabled {
+      background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+      border-color: #cbd5e1;
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+      filter: grayscale(0.8);
+    }
+
+    /* Dynamic Bar Animation for Audience Suspense */
+    .bar-animating {
+      animation: barBounce 0.25s infinite alternate ease-in-out;
+    }
+
+    @keyframes barBounce {
+      0% { height: 15%; }
+      100% { height: 90%; }
+    }
+
     @keyframes flashOrange {
       0% { filter: brightness(1); }
       100% { filter: brightness(1.25); }
@@ -86,7 +124,7 @@
 
     @keyframes flashGreen {
       0% { filter: brightness(1); }
-      100% { filter: brightness(1.2); }
+      100% { filter: brightness(1.25); }
     }
 
     ::-webkit-scrollbar { width: 6px; }
@@ -97,7 +135,9 @@
 </head>
 <body class="relative flex flex-col items-center justify-between min-h-screen p-3 md:p-6">
 
-  <div class="w-full max-w-7xl mx-auto flex flex-col gap-4">
+  <div id="student-app" class="hidden fixed inset-0 z-[60] overflow-y-auto text-white" style="background:linear-gradient(180deg,#0c4a6e,#0f172a)"></div>
+
+  <div id="main-wrap" class="w-full max-w-7xl mx-auto flex flex-col gap-4">
 
     <!-- HEADER BAR -->
     <header class="light-card rounded-2xl p-4 flex flex-wrap justify-between items-center gap-4 border-sky-300">
@@ -158,9 +198,15 @@
         <button onclick="bukaModalPengaturan()" class="px-8 py-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm transition border border-slate-300">
           ⚙️ Buka Pengaturan
         </button>
+        <button onclick="onlineBuka()" class="px-8 py-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-montserrat font-black text-sm tracking-wider shadow-lg transition hover:scale-105 border-2 border-emerald-600">
+          🌐 MODE ONLINE (KELAS)
+        </button>
       </div>
 
     </main>
+
+    <!-- ==================== MODE ONLINE (GURU) ==================== -->
+    <section id="online-panel" class="hidden"><div id="online-body"></div></section>
 
     <!-- ==================== GAME BOARD ==================== -->
     <section id="game-panel-millionaire" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -176,21 +222,41 @@
             <div id="lives-display-milli" class="flex gap-1 text-rose-500 text-xs mt-0.5">❤️ ❤️ ❤️</div>
           </div>
 
-          <!-- Lifelines & Game Controls (Pause & Quit) -->
-          <div class="flex items-center gap-2">
-            <button id="lifeline-5050" onclick="useLifeline5050()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
-              50:50
+          <!-- Lifelines Berpenampilan Profesional & Game Controls -->
+          <div class="flex items-center gap-2 flex-wrap">
+            
+            <!-- Lifeline 50:50 -->
+            <button id="lifeline-5050" onclick="useLifeline5050()" class="lifeline-btn px-3.5 h-10 rounded-xl text-white text-xs font-extrabold flex items-center gap-2">
+              <svg class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+              </svg>
+              <span>50:50</span>
             </button>
-            <button id="lifeline-audience" onclick="useLifelineAudience()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
-              👥 Penonton
+
+            <!-- Lifeline Tanya Penonton -->
+            <button id="lifeline-audience" onclick="useLifelineAudience()" class="lifeline-btn px-3.5 h-10 rounded-xl text-white text-xs font-extrabold flex items-center gap-2">
+              <svg class="w-4 h-4 fill-amber-400" viewBox="0 0 24 24">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+              </svg>
+              <span>Penonton</span>
             </button>
-            <button id="lifeline-switch" onclick="useLifelineSwitch()" class="px-3 h-10 rounded-xl bg-sky-600 text-white border border-sky-700 text-xs font-black hover:bg-sky-500 transition shadow">
-              🔄 Ganti Soal
+
+            <!-- Lifeline Ganti Soal -->
+            <button id="lifeline-switch" onclick="useLifelineSwitch()" class="lifeline-btn px-3.5 h-10 rounded-xl text-white text-xs font-extrabold flex items-center gap-2">
+              <svg class="w-4 h-4 stroke-amber-400 stroke-2 fill-none" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Ganti Soal</span>
             </button>
             
-            <!-- Tombol Pause & Quit -->
+            <div class="h-6 w-px bg-slate-300 mx-1"></div>
+
+            <!-- Tombol Pause, Quit, & Akhiri Permainan -->
             <button id="btn-pause-game" onclick="togglePauseGame()" class="px-3 h-10 rounded-xl bg-amber-500 text-slate-950 border border-amber-600 text-xs font-black hover:bg-amber-400 transition shadow">
               ⏸️ Pause
+            </button>
+            <button onclick="akhiriPermainanGuru()" class="px-3 h-10 rounded-xl bg-purple-600 text-white border border-purple-700 text-xs font-black hover:bg-purple-500 transition shadow">
+              🏁 Akhiri Game
             </button>
             <button onclick="quitGame()" class="px-3 h-10 rounded-xl bg-rose-600 text-white border border-rose-700 text-xs font-black hover:bg-rose-500 transition shadow">
               🚪 Quit
@@ -216,10 +282,16 @@
             </button>
           </div>
 
-          <div class="relative bg-gradient-to-b from-sky-900 to-slate-900 border-2 border-amber-400 wwtbm-shape p-6 text-center flex flex-col items-center justify-center shadow-lg">
+          <div class="relative bg-gradient-to-b from-sky-900 to-slate-900 border-2 border-amber-400 wwtbm-shape p-6 text-center flex flex-col items-center justify-center shadow-lg min-h-[160px]">
             <button onclick="bacaTeksSoalTTS()" class="absolute top-2 right-8 px-3 py-1 rounded-lg bg-amber-400 text-slate-950 text-[11px] font-bold flex items-center gap-1 hover:scale-105 transition">
               🔊 Bacakan Soal
             </button>
+            
+            <!-- Tampilan Gambar Soal dari Folder gambar/ -->
+            <div id="container-gambar-soal" class="hidden my-2 max-w-xs max-h-48 rounded-lg overflow-hidden border-2 border-amber-400 shadow-md">
+              <img id="gambar-soal-milli" src="" alt="Gambar Soal" class="w-full h-full object-contain">
+            </div>
+
             <div id="pertanyaan-text-milli" class="font-montserrat font-extrabold text-base md:text-xl text-white max-w-xl my-3">
               Pertanyaan...
             </div>
@@ -270,6 +342,91 @@
 
     </section>
 
+    <!-- ==================== PAPAN SKOR & PODIUM PANEL ==================== -->
+    <section id="papan-skor-panel" class="hidden light-card rounded-3xl p-6 md:p-10 gold-glow-border flex flex-col items-center justify-center my-auto min-h-[550px] space-y-8">
+      
+      <div class="text-center space-y-2">
+        <span class="inline-block px-4 py-1.5 bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold rounded-full uppercase tracking-widest">
+          Hasil Akhir Pertandingan
+        </span>
+        <h2 class="font-montserrat font-black text-3xl md:text-5xl text-slate-900 tracking-tight">
+          🏆 PAPAN SKOR & PODIUM JUARA 🏆
+        </h2>
+        <p class="text-sm text-slate-600 font-medium">Selamat kepada para pemenang kuis!</p>
+      </div>
+
+      <!-- TAMPILAN PODIUM 1, 2, 3 -->
+      <div id="podium-container" class="flex justify-center items-end gap-3 md:gap-6 w-full max-w-2xl py-4">
+        <!-- Juara 2 (Perak) -->
+        <div id="podium-2" class="flex flex-col items-center flex-1 order-1">
+          <div class="text-center mb-2">
+            <div class="text-2xl md:text-3xl">🥈</div>
+            <div id="podium-2-nama" class="font-bold text-xs md:text-sm text-slate-800 truncate max-w-[100px] md:max-w-[130px]">-</div>
+            <div id="podium-2-skor" class="text-[11px] font-extrabold text-sky-700">Rp 0</div>
+          </div>
+          <div class="w-full bg-slate-300 border-2 border-slate-400 rounded-t-2xl h-28 md:h-36 flex items-center justify-center shadow-md">
+            <span class="font-montserrat font-black text-2xl text-slate-700">2</span>
+          </div>
+        </div>
+
+        <!-- Juara 1 (Emas) -->
+        <div id="podium-1" class="flex flex-col items-center flex-1 order-2">
+          <div class="text-center mb-2">
+            <div class="text-3xl md:text-4xl animate-bounce">👑 🥇</div>
+            <div id="podium-1-nama" class="font-black text-sm md:text-base text-amber-800 truncate max-w-[110px] md:max-w-[150px]">-</div>
+            <div id="podium-1-skor" class="text-xs md:text-sm font-black text-amber-600">Rp 0</div>
+          </div>
+          <div class="w-full bg-amber-400 border-2 border-amber-500 rounded-t-2xl h-36 md:h-48 flex items-center justify-center shadow-xl">
+            <span class="font-montserrat font-black text-4xl text-slate-950">1</span>
+          </div>
+        </div>
+
+        <!-- Juara 3 (Perunggu) -->
+        <div id="podium-3" class="flex flex-col items-center flex-1 order-3">
+          <div class="text-center mb-2">
+            <div class="text-2xl md:text-3xl">🥉</div>
+            <div id="podium-3-nama" class="font-bold text-xs md:text-sm text-slate-800 truncate max-w-[100px] md:max-w-[130px]">-</div>
+            <div id="podium-3-skor" class="text-[11px] font-extrabold text-amber-800">Rp 0</div>
+          </div>
+          <div class="w-full bg-amber-700 border-2 border-amber-800 rounded-t-2xl h-20 md:h-28 flex items-center justify-center shadow-md">
+            <span class="font-montserrat font-black text-2xl text-amber-100">3</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABEL KLASEMEN LENGKAP -->
+      <div class="w-full max-w-3xl bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <table class="w-full text-left text-xs md:text-sm">
+          <thead class="bg-slate-100 text-slate-700 font-bold uppercase border-b border-slate-200">
+            <tr>
+              <th class="p-3 text-center w-12">#</th>
+              <th class="p-3">Nama Kelompok / Peserta</th>
+              <th class="p-3 text-center">Level Highest</th>
+              <th id="header-skor-kolom" class="p-3 text-right">Total Poin (Rp)</th>
+              <th class="p-3 text-center">Sisa Nyawa</th>
+            </tr>
+          </thead>
+          <tbody id="papan-skor-body" class="divide-y divide-slate-100 font-medium text-slate-800">
+            <!-- Dynamic via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex flex-wrap justify-center gap-4">
+        <button onclick="mulaiGame()" class="px-8 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs md:text-sm shadow transition hover:scale-105 border border-amber-500">
+          🔄 Main Lagi
+        </button>
+        <button onclick="downloadSkorCSV()" class="px-6 py-3 rounded-full bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs md:text-sm shadow transition hover:scale-105">
+          📥 Download Rekap (CSV)
+        </button>
+        <button onclick="kembaliKeHome()" class="px-6 py-3 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs md:text-sm transition">
+          🏠 Halaman Utama
+        </button>
+      </div>
+
+    </section>
+
   </div>
 
   <!-- ==================== MODAL PENGATURAN ==================== -->
@@ -305,7 +462,7 @@
             <textarea id="input-peserta-massal" class="w-full h-24 bg-white border border-slate-300 rounded-xl p-2 text-xs text-slate-800 focus:outline-none focus:border-amber-400" placeholder="Kelompok Alfa&#10;Kelompok Beta&#10;Kelompok Gamma"></textarea>
           </div>
 
-          <!-- Timer & Nyawa & BGM -->
+          <!-- Timer & Nyawa & Mode Reward & BGM -->
           <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div>
               <label class="block font-bold text-rose-800 uppercase mb-1">❤️ Sistem Nyawa (Lives)</label>
@@ -315,6 +472,14 @@
                 <button type="button" id="life-btn-3" onclick="setLivesSetting(3)" class="py-1.5 rounded-lg border border-rose-400 bg-rose-100 text-rose-800 font-bold">3 ❤️</button>
                 <button type="button" id="life-btn-5" onclick="setLivesSetting(5)" class="py-1.5 rounded-lg border border-slate-300 bg-white font-bold">5 ❤️</button>
               </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-amber-800 uppercase mb-1">🏆 Sistem Hadiah / Skor:</label>
+              <select id="select-reward-mode" onchange="setRewardMode(this.value)" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold">
+                <option value="uang" selected>Sistem Uang (Rp 500.000 - Rp 1 Miliar)</option>
+                <option value="poin">Sistem Poin (10 Poin - 1.000 Poin)</option>
+              </select>
             </div>
 
             <div>
@@ -347,6 +512,15 @@
 
         </div>
 
+        <!-- PENGATURAN SOAL PER LEVEL -->
+        <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 space-y-3">
+          <div>
+            <h4 class="font-bold text-amber-900 text-xs md:text-sm">🎯 Pemilihan Soal per Level</h4>
+            <p class="text-[11px] text-slate-600 mt-1">Atur sebelum permainan dimulai. Pilih Acak agar soal pada level tersebut dipilih otomatis, atau Manual untuk menetapkan soal tertentu.</p>
+          </div>
+          <div id="pengaturan-soal-per-level" class="space-y-2"></div>
+        </div>
+
         <!-- KELOLA BANK SOAL SECTION -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
           
@@ -363,10 +537,22 @@
           <div id="tab-soal-crud" class="space-y-3">
             <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
               <input type="hidden" id="crud-index" value="-1">
+              
               <div>
                 <label class="block text-[11px] font-semibold text-slate-500 mb-1">Pertanyaan:</label>
                 <input type="text" id="crud-pertanyaan" class="w-full border border-slate-300 rounded p-1.5 focus:outline-none focus:border-amber-400" placeholder="Tulis pertanyaan di sini...">
               </div>
+
+              <!-- Nama/Path File Gambar dari Folder (Sangat Ringan Memori) -->
+              <div class="p-2 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
+                <label class="block text-[11px] font-semibold text-slate-700">🖼️ Nama File Gambar di Folder <code class="bg-slate-200 px-1 py-0.5 rounded text-amber-800">gambar/</code> (Opsional):</label>
+                <input type="text" id="crud-gambar-path" class="w-full border border-slate-300 rounded p-1.5 focus:outline-none focus:border-amber-400" placeholder="Contoh: cpu.jpg atau gambar/cpu.jpg">
+                <div id="crud-gambar-preview-wrap" class="hidden mt-2 rounded-lg border border-slate-200 bg-white p-2">
+                  <img id="crud-gambar-preview" class="hidden max-h-40 max-w-full mx-auto object-contain rounded" alt="Preview gambar soal">
+                  <div id="crud-gambar-preview-status" class="text-[11px] font-semibold text-slate-500 text-center mt-1"></div>
+                </div>
+              </div>
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input type="text" id="crud-opt-a" class="border border-slate-300 rounded p-1.5" placeholder="Opsi A">
                 <input type="text" id="crud-opt-b" class="border border-slate-300 rounded p-1.5" placeholder="Opsi B">
@@ -397,8 +583,9 @@
               <label class="block text-[11px] font-bold text-slate-600">Import Massal Teks Sederhana:</label>
               <button type="button" onclick="isiContohImport()" class="text-[11px] text-sky-600 font-semibold hover:underline">📋 Isi Contoh Format</button>
             </div>
-            <div class="text-[10px] text-slate-500">Format per baris: <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-800">Pertanyaan ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? Kunci(A/B/C/D)</code></div>
-            <textarea id="input-soal-massal" class="w-full h-28 bg-white border border-slate-300 rounded-xl p-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-amber-400" placeholder="Pertanyaan... ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? A"></textarea>
+            <div class="text-[10px] text-slate-500">Format per baris: <code class="bg-slate-200 px-1 py-0.5 rounded text-slate-800">Pertanyaan ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? Kunci(A/B/C/D) ? Nama_File_Gambar</code></div>
+            <textarea id="input-soal-massal" class="w-full h-28 bg-white border border-slate-300 rounded-xl p-2 text-xs font-mono text-slate-800 focus:outline-none focus:border-amber-400" placeholder="Pertanyaan... ? Opsi A ? Opsi B ? Opsi C ? Opsi D ? A ? cpu.jpg"></textarea>
+            <div id="import-gambar-preview-list" class="hidden space-y-2 rounded-xl border border-slate-200 bg-white p-3"></div>
             <button type="button" onclick="prosesImportMassal()" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs">Proses Import Ke Bank Soal</button>
           </div>
 
@@ -421,6 +608,7 @@
                     <th class="p-2 w-8 text-center"><input type="checkbox" id="check-all-soal" onchange="toggleCheckAll(this)"></th>
                     <th class="p-2 w-8">No</th>
                     <th class="p-2">Pertanyaan</th>
+                    <th class="p-2 w-16 text-center">Gambar</th>
                     <th class="p-2 w-16">Kunci</th>
                     <th class="p-2 w-24 text-center">Aksi</th>
                   </tr>
@@ -449,12 +637,21 @@
     </div>
   </div>
 
-  <!-- AUDIENCE POLL MODAL -->
+  <!-- AUDIENCE POLL MODAL (Tanya Penonton Vertikal & Animasi) -->
   <div id="modal-audience" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="light-card rounded-3xl p-6 gold-glow-border max-w-md w-full text-center space-y-4">
-      <h3 class="font-montserrat font-black text-lg text-slate-900">📊 HASIL VOTING PENONTON</h3>
-      <div id="audience-chart" class="space-y-2 py-2 text-xs font-bold text-left"></div>
-      <button onclick="closeAudienceModal()" class="px-6 py-2 rounded-full bg-amber-400 text-slate-950 font-bold text-xs">
+      <h3 class="font-montserrat font-black text-lg text-slate-900 flex items-center justify-center gap-2">
+        📊 HASIL VOTING PENONTON
+      </h3>
+
+      <div id="audience-status-text" class="text-xs font-semibold text-amber-600 animate-pulse">
+        Menghitung hasil polling penonton...
+      </div>
+
+      <!-- Grafik Batang Vertikal -->
+      <div id="audience-chart" class="grid grid-cols-4 gap-3 py-2 text-xs font-bold items-end h-44 border-b border-slate-200"></div>
+
+      <button id="btn-close-audience" disabled onclick="closeAudienceModal()" class="px-6 py-2 rounded-full bg-slate-300 text-slate-500 font-bold text-xs cursor-not-allowed transition">
         Tutup
       </button>
     </div>
@@ -466,6 +663,12 @@
     const audioSalah = new Audio('salah.mp3');
     const audioTick = new Audio('tick.mp3');
     const audioBGM = new Audio('bgm.mp3');
+    const audioWinner = new Audio('winner.mp3');
+    const audio5050 = new Audio('50.50.mp3');
+    const audioEliminasi = new Audio('eliminasi.mp3');
+    const audioGantiSoal = new Audio('gantisoal.mp3');
+    const audioPenonton = new Audio('penonton.mp3');
+
     audioBGM.loop = true;
     audioBGM.volume = 0.4;
 
@@ -531,9 +734,40 @@
       audioTick.currentTime = 0;
     }
 
-    /* ==================== GLOBAL STATE ==================== */
+    function playSoundWinner() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioWinner.currentTime = 0;
+      audioWinner.play().catch(e => console.log("Gagal memutar audio winner:", e));
+    }
+
+    function playSound5050() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audio5050.currentTime = 0;
+      audio5050.play().catch(e => console.log("Gagal memutar audio 50:50:", e));
+    }
+
+    function playSoundEliminasi() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioEliminasi.currentTime = 0;
+      audioEliminasi.play().catch(e => console.log("Gagal memutar audio eliminasi:", e));
+    }
+
+    function playSoundGantiSoal() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioGantiSoal.currentTime = 0;
+      audioGantiSoal.play().catch(e => console.log("Gagal memutar audio ganti soal:", e));
+    }
+
+    function playSoundPenonton() {
+      if (document.getElementById('select-audio').value === 'off') return;
+      audioPenonton.currentTime = 0;
+      audioPenonton.play().catch(e => console.log("Gagal memutar audio penonton:", e));
+    }
+
+    /* ==================== GLOBAL STATE & SISTEM SKOR/POIN ==================== */
     let participantType = 'kelompok'; 
     let livesSetting = 3; 
+    let rewardMode = 'uang'; // 'uang' atau 'poin'
 
     let daftarPeserta = [];
     let giliranPesertaIndex = 0;
@@ -546,36 +780,221 @@
     let indexSoalAktif = 0;
     let shuffledPilihanSaatIni = []; 
     let jawabanBenarShuffledIndex = 0; 
+    let usedQuestionsSet = new Set();
 
     const abjad = ['A', 'B', 'C', 'D'];
 
+    // Opsi Tangga Hadiah Mode Uang
     const moneyLadderValues = [
       500000, 1000000, 2000000, 3000000, 5000000,
       10000000, 15000000, 25000000, 50000000, 100000000,
       150000000, 250000000, 500000000, 750000000, 1000000000
     ];
 
-    const moneyLadder = [
+    const moneyLadderLabels = [
       "Rp 500.000", "Rp 1.000.000", "Rp 2.000.000", "Rp 3.000.000", "Rp 5.000.000",
       "Rp 10.000.000", "Rp 15.000.000", "Rp 25.000.000", "Rp 50.000.000", "Rp 100.000.000",
       "Rp 150.000.000", "Rp 250.000.000", "Rp 500.000.000", "Rp 750.000.000", "Rp 1.000.000.000"
     ];
 
+    // Opsi Tangga Hadiah Mode Poin
+    const pointLadderValues = [
+      10, 20, 30, 50, 100,
+      150, 200, 300, 400, 500,
+      600, 700, 800, 900, 1000
+    ];
+
+    const pointLadderLabels = [
+      "10 Poin", "20 Poin", "30 Poin", "50 Poin", "100 Poin",
+      "150 Poin", "200 Poin", "300 Poin", "400 Poin", "500 Poin",
+      "600 Poin", "700 Poin", "800 Poin", "900 Poin", "1.000 Poin"
+    ];
+
+    function getActiveLadderValues() {
+      return rewardMode === 'poin' ? pointLadderValues : moneyLadderValues;
+    }
+
+    function getActiveLadderLabels() {
+      return rewardMode === 'poin' ? pointLadderLabels : moneyLadderLabels;
+    }
+
+    function formatSkorDisplay(val) {
+      if (rewardMode === 'poin') {
+        return `${val.toLocaleString('id-ID')} Poin`;
+      } else {
+        return `Rp ${val.toLocaleString('id-ID')}`;
+      }
+    }
+
+    function formatSkorSingkat(val) {
+      if (rewardMode === 'poin') {
+        return `${val} Pts`;
+      }
+      if (val >= 1000000000) return (val / 1000000000) + ' M';
+      if (val >= 1000000) return (val / 1000000) + ' Jt';
+      if (val >= 1000) return (val / 1000) + ' Rb';
+      return val;
+    }
+
+    function setRewardMode(mode) {
+      rewardMode = mode;
+      localStorage.setItem('millionaire_reward_mode', mode);
+      renderPengaturanSoalLevel();
+    }
+
     const defaultSoalKomputer = [
-      { pertanyaan: "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah...", pilihan: ["Microphone", "Speaker", "Monitor", "Printer"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat input yang merespons ketukan jari pengguna adalah...", pilihan: ["Keyboard", "Monitor", "Speaker", "CPU"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat keras yang mendeteksi gerakan kursor di layar adalah...", pilihan: ["Mouse", "Scanner", "Printer", "RAM"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat keras yang berfungsi menangkap gambar secara digital adalah...", pilihan: ["Webcam", "Speaker", "CPU", "Harddisk"], jawabanBenar: 0 },
-      { pertanyaan: "Bagian komputer yang bertugas mengolah data utama adalah...", pilihan: ["CPU", "Mouse", "Keyboard", "Monitor"], jawabanBenar: 0 },
-      { pertanyaan: "Komponen yang berfungsi menyimpan data sementara saat komputer menyala adalah...", pilihan: ["RAM", "Harddisk", "Printer", "Speaker"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat proses yang memproses hasil berupa gambar/grafik adalah...", pilihan: ["VGA Card", "Sound Card", "Microphone", "Webcam"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat output yang berfungsi menampilkan gambar dan teks adalah...", pilihan: ["Monitor", "Keyboard", "Mouse", "Microphone"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat output yang berfungsi mengeluarkan suara adalah...", pilihan: ["Speaker", "Webcam", "Scanner", "Harddisk"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat output yang digunakan untuk mencetak dokumen dan objek adalah...", pilihan: ["Printer", "Mouse", "Keyboard", "Scanner"], jawabanBenar: 0 },
-      { pertanyaan: "Perangkat yang berfungsi sebagai tempat penyimpanan data permanen adalah...", pilihan: ["Harddisk", "RAM", "CPU", "VGA Card"], jawabanBenar: 0 }
+      { pertanyaan: "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah...", pilihan: ["Microphone", "Speaker", "Monitor", "Printer"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat input yang merespons ketukan jari pengguna adalah...", pilihan: ["Keyboard", "Monitor", "Speaker", "CPU"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat keras yang mendeteksi gerakan kursor di layar adalah...", pilihan: ["Mouse", "Scanner", "Printer", "RAM"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat keras yang berfungsi menangkap gambar secara digital adalah...", pilihan: ["Webcam", "Speaker", "CPU", "Harddisk"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Bagian komputer yang bertugas mengolah data utama adalah...", pilihan: ["CPU", "Mouse", "Keyboard", "Monitor"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Komponen yang berfungsi menyimpan data sementara saat komputer menyala adalah...", pilihan: ["RAM", "Harddisk", "Printer", "Speaker"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat proses yang memproses hasil berupa gambar/grafik adalah...", pilihan: ["VGA Card", "Sound Card", "Microphone", "Webcam"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat output yang berfungsi menampilkan gambar dan teks adalah...", pilihan: ["Monitor", "Keyboard", "Mouse", "Microphone"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat output yang berfungsi mengeluarkan suara adalah...", pilihan: ["Speaker", "Webcam", "Scanner", "Harddisk"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat output yang digunakan untuk mencetak dokumen dan objek adalah...", pilihan: ["Printer", "Mouse", "Keyboard", "Scanner"], jawabanBenar: 0, gambar: "" },
+      { pertanyaan: "Perangkat yang berfungsi sebagai tempat penyimpanan data permanen adalah...", pilihan: ["Harddisk", "RAM", "CPU", "VGA Card"], jawabanBenar: 0, gambar: "" }
     ];
 
     let bankSoalMaster = [];
+    let pengaturanSoalLevel = Array.from({ length: 15 }, () => ({ mode: 'acak', soalIndex: 0 }));
+    let antreanSoalPerLevel = [];
+    let posisiAntreanSoalPerLevel = [];
+
+    /* ==================== PEMILIHAN SOAL PER LEVEL ==================== */
+    function muatPengaturanSoalLevel() {
+      try {
+        const storedRewardMode = localStorage.getItem('millionaire_reward_mode');
+        if (storedRewardMode) {
+          rewardMode = storedRewardMode;
+          const selReward = document.getElementById('select-reward-mode');
+          if (selReward) selReward.value = storedRewardMode;
+        }
+
+        const tersimpan = JSON.parse(localStorage.getItem('millionaire_pengaturan_soal_level') || 'null');
+        if (Array.isArray(tersimpan)) {
+          pengaturanSoalLevel = Array.from({ length: 15 }, (_, i) => {
+            const item = tersimpan[i] || {};
+            return { mode: item.mode === 'manual' ? 'manual' : 'acak', soalIndex: Number.isInteger(item.soalIndex) ? item.soalIndex : 0 };
+          });
+        }
+      } catch (e) { console.warn('Pengaturan soal per level tidak dapat dimuat:', e); }
+      renderPengaturanSoalLevel();
+    }
+
+    function simpanPengaturanSoalLevel() {
+      localStorage.setItem('millionaire_pengaturan_soal_level', JSON.stringify(pengaturanSoalLevel));
+    }
+
+    function renderPengaturanSoalLevel() {
+      const wadah = document.getElementById('pengaturan-soal-per-level');
+      if (!wadah) return;
+      wadah.innerHTML = '';
+      const activeLabels = getActiveLadderLabels();
+
+      for (let i = 0; i < 15; i++) {
+        const pengaturan = pengaturanSoalLevel[i] || { mode: 'acak', soalIndex: 0 };
+        if (bankSoalMaster.length && pengaturan.soalIndex >= bankSoalMaster.length) pengaturan.soalIndex = 0;
+        const baris = document.createElement('div');
+        baris.className = 'grid grid-cols-1 sm:grid-cols-[100px_120px_minmax(0,1fr)] gap-2 items-center rounded-xl bg-white border border-amber-100 p-2';
+        const label = document.createElement('div');
+        label.className = 'font-bold text-xs text-slate-700';
+        label.textContent = `Level ${i + 1} · ${activeLabels[i]}`;
+        const mode = document.createElement('select');
+        mode.className = 'w-full border border-slate-300 rounded-lg p-2 text-xs font-semibold';
+        mode.innerHTML = '<option value="acak">🔀 Acak</option><option value="manual">📌 Manual</option>';
+        mode.value = pengaturan.mode;
+        mode.setAttribute('aria-label', `Mode soal level ${i + 1}`);
+        const pilihan = document.createElement('select');
+        pilihan.className = 'w-full min-w-0 border border-slate-300 rounded-lg p-2 text-xs';
+        pilihan.setAttribute('aria-label', `Pilih soal level ${i + 1}`);
+        if (!bankSoalMaster.length) {
+          pilihan.innerHTML = '<option value="0">Belum ada soal di bank</option>';
+          pilihan.disabled = true;
+        } else {
+          bankSoalMaster.forEach((soal, idx) => {
+            const opt = document.createElement('option');
+            opt.value = String(idx);
+            opt.textContent = `${idx + 1}. ${soal.pertanyaan || '(Soal tanpa teks)'}`;
+            opt.title = opt.textContent;
+            pilihan.appendChild(opt);
+          });
+          pilihan.value = String(pengaturan.soalIndex);
+          pilihan.disabled = pengaturan.mode !== 'manual';
+        }
+        mode.addEventListener('change', () => {
+          pengaturanSoalLevel[i].mode = mode.value;
+          pilihan.disabled = mode.value !== 'manual' || !bankSoalMaster.length;
+          simpanPengaturanSoalLevel();
+        });
+        pilihan.addEventListener('change', () => {
+          pengaturanSoalLevel[i].soalIndex = parseInt(pilihan.value, 10) || 0;
+          simpanPengaturanSoalLevel();
+        });
+        const preview = document.createElement('div');
+        preview.className = 'sm:col-span-3 text-[10px] text-slate-500';
+        preview.textContent = pengaturan.mode === 'manual' && bankSoalMaster[pengaturan.soalIndex]
+          ? `Soal terpilih: ${bankSoalMaster[pengaturan.soalIndex].pertanyaan}`
+          : 'Soal dipilih otomatis dari bank soal saat level ini dimainkan.';
+        pilihan.addEventListener('change', () => {
+          preview.textContent = `Soal terpilih: ${bankSoalMaster[parseInt(pilihan.value, 10)]?.pertanyaan || ''}`;
+        });
+        mode.addEventListener('change', () => {
+          preview.textContent = mode.value === 'manual'
+            ? `Soal terpilih: ${bankSoalMaster[pengaturanSoalLevel[i].soalIndex]?.pertanyaan || ''}`
+            : 'Soal dipilih otomatis dari bank soal saat level ini dimainkan.';
+        });
+        baris.append(label, mode, pilihan, preview);
+        wadah.appendChild(baris);
+      }
+    }
+
+    function acakDaftarSoal(daftar) {
+      const hasil = [...daftar];
+      for (let i = hasil.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [hasil[i], hasil[j]] = [hasil[j], hasil[i]];
+      }
+      return hasil;
+    }
+
+    function ambilSoalUntukLevel(level) {
+      const nomorLevel = Math.max(0, Math.min(14, level || 0));
+      const pengaturan = pengaturanSoalLevel[nomorLevel] || { mode: 'acak', soalIndex: 0 };
+      if (!bankSoalMaster.length) return null;
+
+      if (pengaturan.mode === 'manual') {
+        const index = Math.max(0, Math.min(bankSoalMaster.length - 1, pengaturan.soalIndex || 0));
+        usedQuestionsSet.add(index);
+        return bankSoalMaster[index];
+      }
+
+      if (!antreanSoalPerLevel[nomorLevel] || posisiAntreanSoalPerLevel[nomorLevel] >= antreanSoalPerLevel[nomorLevel].length) {
+        antreanSoalPerLevel[nomorLevel] = acakDaftarSoal(bankSoalMaster.map((_, idx) => idx));
+        posisiAntreanSoalPerLevel[nomorLevel] = 0;
+      }
+
+      let attempts = 0;
+      while (attempts < bankSoalMaster.length) {
+        if (posisiAntreanSoalPerLevel[nomorLevel] >= antreanSoalPerLevel[nomorLevel].length) {
+          antreanSoalPerLevel[nomorLevel] = acakDaftarSoal(bankSoalMaster.map((_, idx) => idx));
+          posisiAntreanSoalPerLevel[nomorLevel] = 0;
+        }
+
+        const candidateIdx = antreanSoalPerLevel[nomorLevel][posisiAntreanSoalPerLevel[nomorLevel]++];
+        
+        if (!usedQuestionsSet.has(candidateIdx)) {
+          usedQuestionsSet.add(candidateIdx);
+          return bankSoalMaster[candidateIdx];
+        }
+        attempts++;
+      }
+
+      usedQuestionsSet.clear();
+      const fallbackIdx = antreanSoalPerLevel[nomorLevel][0];
+      usedQuestionsSet.add(fallbackIdx);
+      return bankSoalMaster[fallbackIdx];
+    }
 
     /* ==================== CRUD & IMPORT SOAL ==================== */
     function loadBankSoal() {
@@ -614,6 +1033,7 @@
           </td>
           <td class="p-2 border-t border-slate-100">${idx + 1}</td>
           <td class="p-2 border-t border-slate-100 font-semibold truncate max-w-[180px]">${soal.pertanyaan}</td>
+          <td class="p-2 border-t border-slate-100 text-center">${soal.gambar ? '🖼️' : '-'}</td>
           <td class="p-2 border-t border-slate-100 text-amber-600 font-bold">${abjad[soal.jawabanBenar]}</td>
           <td class="p-2 border-t border-slate-100 text-center space-x-1">
             <button type="button" onclick="editSoalCRUD(${idx})" class="px-2 py-0.5 rounded bg-sky-600 text-white text-[10px]">Edit</button>
@@ -624,6 +1044,7 @@
       });
       document.getElementById('info-total-soal').innerText = `Total Soal: ${bankSoalMaster.length}`;
       document.getElementById('check-all-soal').checked = false;
+      renderPengaturanSoalLevel();
     }
 
     function toggleCheckAll(master) {
@@ -665,6 +1086,104 @@
       }
     }
 
+    function normalisasiPathGambar(path) {
+      path = (path || '').trim();
+      if (!path) return '';
+      if (!path.startsWith('gambar/') && !path.startsWith('http://') &&
+          !path.startsWith('https://') && !path.startsWith('data:') &&
+          !path.startsWith('blob:') && !path.startsWith('/') &&
+          !path.startsWith('./') && !path.startsWith('../')) {
+        path = 'gambar/' + path;
+      }
+      return path;
+    }
+
+    function updatePreviewGambarCRUD() {
+      const rawPath = document.getElementById('crud-gambar-path').value.trim();
+      const wrap = document.getElementById('crud-gambar-preview-wrap');
+      const img = document.getElementById('crud-gambar-preview');
+      const status = document.getElementById('crud-gambar-preview-status');
+      img.onload = null;
+      img.onerror = null;
+      img.removeAttribute('src');
+      img.classList.add('hidden');
+
+      if (!rawPath) {
+        wrap.classList.add('hidden');
+        status.textContent = '';
+        return;
+      }
+
+      wrap.classList.remove('hidden');
+      status.className = 'text-[11px] font-semibold text-slate-500 text-center mt-1';
+      status.textContent = 'Memeriksa gambar...';
+      img.onload = function() {
+        img.classList.remove('hidden');
+        status.className = 'text-[11px] font-semibold text-emerald-700 text-center mt-1';
+        status.textContent = '✓ Gambar berhasil dimuat';
+      };
+      img.onerror = function() {
+        img.classList.add('hidden');
+        status.className = 'text-[11px] font-semibold text-rose-600 text-center mt-1';
+        status.textContent = '✕ Gambar tidak ditemukan atau format tidak dapat dibaca. Periksa path/nama file.';
+      };
+      img.src = normalisasiPathGambar(rawPath);
+    }
+
+    function updatePreviewImportMassal() {
+      const teks = document.getElementById('input-soal-massal').value;
+      const list = document.getElementById('import-gambar-preview-list');
+      list.innerHTML = '';
+      const rows = teks.split('\n').map((baris, index) => {
+        const parts = baris.split('?').map(p => p.trim());
+        return { index: index + 1, parts, path: normalisasiPathGambar(parts[6] || '') };
+      }).filter(row => row.parts[0] && row.path);
+
+      if (!rows.length) {
+        list.classList.add('hidden');
+        return;
+      }
+
+      list.classList.remove('hidden');
+      const title = document.createElement('div');
+      title.className = 'text-[11px] font-bold text-slate-700';
+      title.textContent = 'Preview gambar import (akan dicek berdasarkan path):';
+      list.appendChild(title);
+
+      rows.forEach(row => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center gap-3 border-t border-slate-100 pt-2';
+        const img = document.createElement('img');
+        img.className = 'hidden w-16 h-16 object-contain rounded border border-slate-200 bg-slate-50 shrink-0';
+        img.alt = 'Preview baris ' + row.index;
+        const info = document.createElement('div');
+        info.className = 'min-w-0 text-[11px]';
+        const filename = document.createElement('div');
+        filename.className = 'font-semibold text-slate-700 break-all';
+        filename.textContent = 'Baris ' + row.index + ': ' + row.path;
+        const status = document.createElement('div');
+        status.className = 'text-slate-500 mt-1';
+        status.textContent = 'Memeriksa gambar...';
+        info.appendChild(filename);
+        info.appendChild(status);
+        item.appendChild(img);
+        item.appendChild(info);
+        list.appendChild(item);
+
+        img.onload = function() {
+          img.classList.remove('hidden');
+          status.className = 'text-emerald-700 mt-1 font-semibold';
+          status.textContent = '✓ Gambar berhasil dimuat';
+        };
+        img.onerror = function() {
+          img.classList.add('hidden');
+          status.className = 'text-rose-600 mt-1 font-semibold';
+          status.textContent = '✕ Path salah, file tidak ditemukan, atau format tidak didukung';
+        };
+        img.src = row.path;
+      });
+    }
+
     function simpanSoalCRUD() {
       const pert = document.getElementById('crud-pertanyaan').value.trim();
       const a = document.getElementById('crud-opt-a').value.trim();
@@ -673,13 +1192,16 @@
       const d = document.getElementById('crud-opt-d').value.trim();
       const kunci = parseInt(document.getElementById('crud-kunci').value);
       const idxEdit = parseInt(document.getElementById('crud-index').value);
+      let gambarPath = document.getElementById('crud-gambar-path').value.trim();
 
       if (!pert || !a || !b || !c || !d) {
         alert("Harap isi pertanyaan dan semua opsi A-D.");
         return;
       }
 
-      const objSoal = { pertanyaan: pert, pilihan: [a, b, c, d], jawabanBenar: kunci };
+      gambarPath = normalisasiPathGambar(gambarPath);
+
+      const objSoal = { pertanyaan: pert, pilihan: [a, b, c, d], jawabanBenar: kunci, gambar: gambarPath };
       if (idxEdit >= 0) {
         bankSoalMaster[idxEdit] = objSoal;
       } else {
@@ -701,6 +1223,8 @@
       document.getElementById('crud-opt-c').value = s.pilihan[2];
       document.getElementById('crud-opt-d').value = s.pilihan[3];
       document.getElementById('crud-kunci').value = s.jawabanBenar;
+      document.getElementById('crud-gambar-path').value = s.gambar || "";
+      updatePreviewGambarCRUD();
     }
 
     function hapusSoalCRUD(index) {
@@ -720,21 +1244,16 @@
       document.getElementById('crud-opt-c').value = "";
       document.getElementById('crud-opt-d').value = "";
       document.getElementById('crud-kunci').value = "0";
+      document.getElementById('crud-gambar-path').value = "";
+      updatePreviewGambarCRUD();
     }
 
     function isiContohImport() {
       document.getElementById('input-soal-massal').value = 
-        "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah... ? Microphone ? Speaker ? Monitor ? Printer ? A\n" +
-        "Perangkat input yang merespons ketukan jari pengguna adalah... ? Keyboard ? Monitor ? Speaker ? CPU ? A\n" +
-        "Perangkat keras yang mendeteksi gerakan kursor di layar adalah... ? Mouse ? Scanner ? Printer ? RAM ? A\n" +
-        "Perangkat keras yang berfungsi menangkap gambar secara digital adalah... ? Webcam ? Speaker ? CPU ? Harddisk ? A\n" +
-        "Bagian komputer yang bertugas mengolah data utama adalah... ? CPU ? Mouse ? Keyboard ? Monitor ? A\n" +
-        "Komponen yang berfungsi menyimpan data sementara saat komputer menyala adalah... ? RAM ? Harddisk ? Printer ? Speaker ? A\n" +
-        "Perangkat proses yang memproses hasil berupa gambar/grafik adalah... ? VGA Card ? Sound Card ? Microphone ? Webcam ? A\n" +
-        "Perangkat output yang berfungsi menampilkan gambar dan teks adalah... ? Monitor ? Keyboard ? Mouse ? Microphone ? A\n" +
-        "Perangkat output yang berfungsi mengeluarkan suara adalah... ? Speaker ? Webcam ? Scanner ? Harddisk ? A\n" +
-        "Perangkat output yang digunakan untuk mencetak dokumen dan objek adalah... ? Printer ? Mouse ? Keyboard ? Scanner ? A\n" +
-        "Perangkat yang berfungsi sebagai tempat penyimpanan data permanen adalah... ? Harddisk ? RAM ? CPU ? VGA Card ? A";
+        "Apa nama perangkat keras pada gambar berikut? ? CPU ? RAM ? Keyboard ? Mouse ? A ? cpu.jpg\n" +
+        "Perangkat keras yang digunakan untuk memasukkan suara ke komputer adalah... ? Microphone ? Speaker ? Monitor ? Printer ? A ? \n" +
+        "Perangkat input yang merespons ketukan jari pengguna adalah... ? Keyboard ? Monitor ? Speaker ? CPU ? A ? keyboard.png";
+      updatePreviewImportMassal();
     }
 
     function prosesImportMassal() {
@@ -747,10 +1266,15 @@
         if (parts.length >= 6) {
           let keyIndex = abjad.indexOf(parts[5].toUpperCase());
           if (keyIndex === -1) keyIndex = 0;
+          
+          let imgPath = parts[6] || "";
+          imgPath = normalisasiPathGambar(imgPath);
+
           bankSoalMaster.push({
             pertanyaan: parts[0],
             pilihan: [parts[1], parts[2], parts[3], parts[4]],
-            jawabanBenar: keyIndex
+            jawabanBenar: keyIndex,
+            gambar: imgPath
           });
           count++;
         }
@@ -760,6 +1284,7 @@
         simpanBankSoalKeStorage();
         renderTabelCRUD();
         document.getElementById('input-soal-massal').value = '';
+        updatePreviewImportMassal();
         alert(`Berhasil mengimpor ${count} soal baru!`);
       } else {
         alert("Format import belum sesuai. Gunakan simbol '?' sebagai pemisah.");
@@ -831,6 +1356,14 @@
       }
     }
 
+    function akhiriPermainanGuru() {
+      if (confirm("Apakah Anda yakin ingin mengakhiri permainan sekarang dan membuka Papan Skor Akhir?")) {
+        clearInterval(timerInterval);
+        stopSoundTick();
+        tampilkanPapanSkorAkhir();
+      }
+    }
+
     /* ==================== GAME CONTROL ==================== */
     function mulaiGame() {
       durasiSoalSetting = parseInt(document.getElementById('select-waktu').value);
@@ -853,16 +1386,16 @@
       }
 
       dataSoal = JSON.parse(JSON.stringify(bankSoalMaster));
-      for (let i = dataSoal.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [dataSoal[i], dataSoal[j]] = [dataSoal[j], dataSoal[i]];
-      }
+      antreanSoalPerLevel = Array(15).fill(null);
+      posisiAntreanSoalPerLevel = Array(15).fill(0);
+      usedQuestionsSet.clear();
 
       giliranPesertaIndex = 0;
       indexSoalAktif = 0;
       isGamePaused = false;
 
       document.getElementById('home-panel').classList.add('hidden');
+      document.getElementById('papan-skor-panel').classList.add('hidden');
       document.getElementById('btn-back-menu').classList.remove('hidden');
       document.getElementById('game-panel-millionaire').classList.remove('hidden');
 
@@ -874,18 +1407,31 @@
       return daftarPeserta[giliranPesertaIndex % daftarPeserta.length];
     }
 
+    function cariPesertaAktifBerikutnya() {
+      if (livesSetting === 0) {
+        giliranPesertaIndex++;
+        return true;
+      }
+      
+      const adaYangAktif = daftarPeserta.some(p => p.lives > 0);
+      if (!adaYangAktif) {
+        return false;
+      }
+
+      let count = 0;
+      do {
+        giliranPesertaIndex++;
+        count++;
+      } while (getPesertaAktif().lives <= 0 && count < daftarPeserta.length * 2);
+
+      return getPesertaAktif().lives > 0;
+    }
+
     function renderHearts(count) {
       if (livesSetting === 0) return `<span class="text-xs text-slate-400">Nyawa Nonaktif</span>`;
       let hearts = '';
       for (let i = 0; i < count; i++) hearts += '❤️ ';
       return hearts || '<span class="text-xs text-rose-600 font-bold">TERELIMINASI ❌</span>';
-    }
-
-    function formatRupiahSingkat(val) {
-      if (val >= 1000000000) return (val / 1000000000) + ' M';
-      if (val >= 1000000) return (val / 1000000) + ' Jt';
-      if (val >= 1000) return (val / 1000) + ' Rb';
-      return val;
     }
 
     function updateLeaderboardRealtime() {
@@ -895,16 +1441,17 @@
       const activeP = getPesertaAktif();
 
       sorted.forEach((p, idx) => {
-        const isCurrent = p.nama === activeP.nama;
+        const isCurrent = (p.nama === activeP.nama) && (livesSetting === 0 || p.lives > 0);
+        const isEliminated = livesSetting > 0 && p.lives <= 0;
         const div = document.createElement('div');
-        div.className = `p-2 rounded-xl border flex justify-between items-center text-[11px] font-bold ${isCurrent ? 'bg-amber-100 border-amber-400 text-slate-900' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+        div.className = `p-2 rounded-xl border flex justify-between items-center text-[11px] font-bold ${isCurrent ? 'bg-amber-100 border-amber-400 text-slate-900' : isEliminated ? 'bg-rose-50 border-rose-200 text-slate-400 opacity-60' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
         div.innerHTML = `
           <div class="truncate max-w-[100px]">
             <span class="text-amber-700 mr-1">#${idx + 1}</span>
-            <span>${p.nama}</span>
+            <span>${p.nama} ${isEliminated ? '❌' : ''}</span>
           </div>
           <div class="text-right">
-            <div class="text-amber-700">Rp ${formatRupiahSingkat(p.skor)}</div>
+            <div class="text-amber-700">${formatSkorSingkat(p.skor)}</div>
             <div class="text-[9px] text-slate-500">Lvl ${p.level + 1}</div>
           </div>
         `;
@@ -918,6 +1465,7 @@
       const list = document.getElementById('money-ladder-list');
       list.innerHTML = '';
       const activeP = getPesertaAktif();
+      const activeLabels = getActiveLadderLabels();
 
       for (let i = 14; i >= 0; i--) {
         const li = document.createElement('li');
@@ -926,21 +1474,46 @@
         li.className = `p-1 rounded flex justify-between items-center ${isCurrent ? 'bg-amber-400 text-slate-950 font-black scale-105 shadow' : 'bg-slate-100 text-slate-600'} ${isSafe && !isCurrent ? 'text-amber-700 font-bold' : ''}`;
         li.innerHTML = `
           <span>Lvl ${i + 1}</span>
-          <span>${moneyLadder[i]}</span>
+          <span>${activeLabels[i]}</span>
         `;
         list.appendChild(li);
       }
     }
 
     function loadMillionaireQuestion() {
+      if (livesSetting > 0 && getPesertaAktif().lives <= 0) {
+        if (!cariPesertaAktifBerikutnya()) {
+          tampilkanPapanSkorAkhir();
+          return;
+        }
+      }
+
       if (indexSoalAktif >= dataSoal.length) indexSoalAktif = 0;
-      const soal = dataSoal[indexSoalAktif];
       const p = getPesertaAktif();
+      const soal = ambilSoalUntukLevel(p.level) || dataSoal[indexSoalAktif];
+      if (!soal) {
+        alert('Bank soal masih kosong. Tambahkan soal terlebih dahulu melalui Pengaturan.');
+        kembaliKeHome();
+        return;
+      }
+
+      const activeLabels = getActiveLadderLabels();
 
       document.getElementById('giliran-peserta-milli').innerText = p.nama;
       document.getElementById('lives-display-milli').innerHTML = renderHearts(p.lives);
-      document.getElementById('target-hadiah-text').innerText = moneyLadder[p.level];
+      document.getElementById('target-hadiah-text').innerText = activeLabels[p.level];
       document.getElementById('pertanyaan-text-milli').innerText = soal.pertanyaan;
+
+      const containerGambar = document.getElementById('container-gambar-soal');
+      const imgSoal = document.getElementById('gambar-soal-milli');
+      if (soal.gambar) {
+        imgSoal.src = soal.gambar;
+        containerGambar.classList.remove('hidden');
+      } else {
+        imgSoal.src = '';
+        containerGambar.classList.add('hidden');
+      }
+
       document.getElementById('btn-lanjut-milli').classList.add('hidden');
       sudahMenjawab = false;
 
@@ -955,11 +1528,8 @@
       jawabanBenarShuffledIndex = arrayPilihan.indexOf(teksJawabanBenar);
 
       document.getElementById('lifeline-5050').disabled = !p.lifelines['5050'];
-      document.getElementById('lifeline-5050').style.opacity = p.lifelines['5050'] ? '1' : '0.3';
       document.getElementById('lifeline-audience').disabled = !p.lifelines['audience'];
-      document.getElementById('lifeline-audience').style.opacity = p.lifelines['audience'] ? '1' : '0.3';
       document.getElementById('lifeline-switch').disabled = !p.lifelines['switch'];
-      document.getElementById('lifeline-switch').style.opacity = p.lifelines['switch'] ? '1' : '0.3';
 
       const board = document.getElementById('papan-jawaban-milli');
       board.innerHTML = '';
@@ -1008,6 +1578,7 @@
 
     function kunciJawabanMilli(pilihanIdx) {
       const p = getPesertaAktif();
+      const activeValues = getActiveLadderValues();
 
       shuffledPilihanSaatIni.forEach((_, idx) => {
         const btn = document.getElementById(`milli-opt-${idx}`);
@@ -1028,11 +1599,16 @@
 
       if (pilihanIdx === jawabanBenarShuffledIndex) {
         playSoundCorrect();
-        p.skor += moneyLadderValues[p.level];
+        p.skor += activeValues[p.level];
         if (p.level < 14) p.level++;
       } else {
-        playSoundWrong();
-        if (livesSetting > 0) p.lives--;
+        if (livesSetting > 0 && p.lives <= 1) {
+          p.lives--;
+          playSoundEliminasi();
+        } else {
+          playSoundWrong();
+          if (livesSetting > 0) p.lives--;
+        }
       }
 
       updateLeaderboardRealtime();
@@ -1041,8 +1617,80 @@
 
     function lanjutMillionaireBerikutnya() {
       indexSoalAktif++;
-      giliranPesertaIndex++;
+      if (!cariPesertaAktifBerikutnya()) {
+        tampilkanPapanSkorAkhir();
+        return;
+      }
       loadMillionaireQuestion();
+    }
+
+    /* ==================== DISPLAY PAPAN SKOR & PODIUM ==================== */
+    function tampilkanPapanSkorAkhir() {
+      stopBGM();
+      stopSoundTick();
+      playSoundWinner();
+
+      document.getElementById('game-panel-millionaire').classList.add('hidden');
+      document.getElementById('papan-skor-panel').classList.remove('hidden');
+
+      const sorted = [...daftarPeserta].sort((a, b) => b.skor - a.skor);
+
+      const kelompokPeringkat = [];
+      sorted.forEach(p => {
+        let kelompok = kelompokPeringkat.find(g => g.skor === p.skor);
+        if (!kelompok) {
+          kelompok = { skor: p.skor, peserta: [] };
+          kelompokPeringkat.push(kelompok);
+        }
+        kelompok.peserta.push(p);
+      });
+
+      // Update Header Kolom Tabel Skor
+      const headerSkor = document.getElementById('header-skor-kolom');
+      if (headerSkor) {
+        headerSkor.innerText = rewardMode === 'poin' ? 'Total Poin' : 'Total Poin (Rp)';
+      }
+
+      const onl = daftarPeserta.length && daftarPeserta[0].benar != null, ths = document.querySelectorAll('#papan-skor-panel thead th');
+      if (ths.length >= 5) { ths[2].innerText = onl ? 'Jawaban Benar' : 'Level Highest'; ths[4].innerText = onl ? 'Mode' : 'Sisa Nyawa'; }
+
+      [1, 2, 3].forEach((posisi, idx) => {
+        const podium = document.getElementById(`podium-${posisi}`);
+        const kelompok = kelompokPeringkat[idx];
+        const namaEl = document.getElementById(`podium-${posisi}-nama`);
+        const skorEl = document.getElementById(`podium-${posisi}-skor`);
+        if (kelompok) {
+          podium.classList.remove('hidden');
+          namaEl.innerText = kelompok.peserta.map(p => p.nama).join(' / ');
+          namaEl.title = kelompok.peserta.map(p => p.nama).join(' / ');
+          namaEl.classList.remove('truncate');
+          namaEl.style.maxWidth = 'none';
+          namaEl.style.whiteSpace = 'normal';
+          skorEl.innerText = formatSkorDisplay(kelompok.skor);
+          const angkaPodium = podium.querySelector('.font-montserrat.font-black');
+          if (angkaPodium) angkaPodium.innerText = String(idx + 1);
+        } else {
+          podium.classList.add('hidden');
+          namaEl.innerText = '-';
+          skorEl.innerText = formatSkorDisplay(0);
+        }
+      });
+
+      const tbody = document.getElementById('papan-skor-body');
+      tbody.innerHTML = '';
+      sorted.forEach((p, idx) => {
+        const tr = document.createElement('tr');
+        const peringkat = kelompokPeringkat.findIndex(g => g.skor === p.skor) + 1;
+        tr.className = peringkat === 1 ? 'bg-amber-50/60 font-bold' : '';
+        tr.innerHTML = `
+          <td class="p-3 text-center font-bold text-amber-600">#${peringkat}</td>
+          <td class="p-3 font-bold">${p.nama} ${peringkat === 1 ? '👑' : ''}</td>
+          <td class="p-3 text-center">${p.benar != null ? p.benar + ' / ' + p.tot + ' benar' : 'Level ' + (p.level + 1)}</td>
+          <td class="p-3 text-right text-emerald-700 font-extrabold">${formatSkorDisplay(p.skor)}</td>
+          <td class="p-3 text-center">${p.benar != null ? '🌐 Online' : livesSetting === 0 ? '-' : p.lives > 0 ? '❤️ '.repeat(p.lives) : '❌ Tereliminasi'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
     /* LIFELINES */
@@ -1050,7 +1698,9 @@
       const p = getPesertaAktif();
       if (!p.lifelines['5050'] || sudahMenjawab || isGamePaused) return;
       p.lifelines['5050'] = false;
-      document.getElementById('lifeline-5050').style.opacity = '0.3';
+      document.getElementById('lifeline-5050').disabled = true;
+
+      playSound5050();
 
       let wrongIndexes = [0, 1, 2, 3].filter(idx => idx !== jawabanBenarShuffledIndex);
       wrongIndexes.sort(() => Math.random() - 0.5);
@@ -1063,7 +1713,13 @@
       const p = getPesertaAktif();
       if (!p.lifelines['audience'] || sudahMenjawab || isGamePaused) return;
       p.lifelines['audience'] = false;
-      document.getElementById('lifeline-audience').style.opacity = '0.3';
+      document.getElementById('lifeline-audience').disabled = true;
+
+      playSoundPenonton();
+
+      if (isBGMEnabled) {
+        audioBGM.volume = 0.15;
+      }
 
       let correctPct = Math.floor(Math.random() * 30) + 50; 
       let remain = 100 - correctPct;
@@ -1078,24 +1734,58 @@
           remain -= chunk;
         }
       });
+      if (remain > 0) {
+        let otherIdx = [0, 1, 2, 3].find(i => i !== jawabanBenarShuffledIndex);
+        if (otherIdx !== undefined) pcts[otherIdx] += remain;
+      }
 
       const chart = document.getElementById('audience-chart');
+      const statusText = document.getElementById('audience-status-text');
+      const closeBtn = document.getElementById('btn-close-audience');
+
+      statusText.innerText = "Penonton sedang memberikan suara...";
+      statusText.classList.add('animate-pulse');
+      closeBtn.disabled = true;
+      closeBtn.className = "px-6 py-2 rounded-full bg-slate-300 text-slate-500 font-bold text-xs cursor-not-allowed transition";
+
+      // Render Grafik Vertikal dengan Efek Animasi Tegang
       chart.innerHTML = '';
       [0, 1, 2, 3].forEach(idx => {
         chart.innerHTML += `
-          <div>
-            <div class="flex justify-between mb-1 text-slate-700">
-              <span>Opsi ${abjad[idx]}</span>
-              <span>${pcts[idx]}%</span>
+          <div class="flex flex-col items-center justify-end h-full w-full gap-2">
+            <span id="pct-val-${idx}" class="font-mono text-amber-700 text-xs">...</span>
+            <div class="w-full bg-slate-100 rounded-t-xl overflow-hidden relative flex items-end p-1 border border-slate-200 h-32">
+              <div id="bar-fill-${idx}" class="w-full bg-gradient-to-t from-sky-600 to-amber-400 rounded-t-lg bar-animating" style="height: 30%; animation-delay: ${idx * 0.15}s"></div>
             </div>
-            <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-              <div class="h-full bg-amber-400" style="width: ${pcts[idx]}%"></div>
-            </div>
+            <span class="font-black text-slate-800 text-sm">Opsi ${abjad[idx]}</span>
           </div>
         `;
       });
 
       document.getElementById('modal-audience').classList.remove('hidden');
+
+      // Animasi tegang selama 3 detik sebelum grafik persentase vertikal asli muncul
+      setTimeout(() => {
+        statusText.innerText = "Hasil suara penonton telah terkumpul!";
+        statusText.classList.remove('animate-pulse');
+        closeBtn.disabled = false;
+        closeBtn.className = "px-6 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow hover:scale-105 transition";
+
+        [0, 1, 2, 3].forEach(idx => {
+          const bar = document.getElementById(`bar-fill-${idx}`);
+          const valText = document.getElementById(`pct-val-${idx}`);
+          if (bar && valText) {
+            bar.classList.remove('bar-animating');
+            bar.style.transition = 'height 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            bar.style.height = `${pcts[idx]}%`;
+            valText.innerText = `${pcts[idx]}%`;
+          }
+        });
+
+        if (isBGMEnabled) {
+          audioBGM.volume = 0.4;
+        }
+      }, 3000);
     }
 
     function closeAudienceModal() {
@@ -1106,7 +1796,9 @@
       const p = getPesertaAktif();
       if (!p.lifelines['switch'] || sudahMenjawab || isGamePaused) return;
       p.lifelines['switch'] = false;
-      document.getElementById('lifeline-switch').style.opacity = '0.3';
+      document.getElementById('lifeline-switch').disabled = true;
+
+      playSoundGantiSoal();
 
       indexSoalAktif++;
       loadMillionaireQuestion();
@@ -1160,8 +1852,10 @@
         stopSoundTick();
         stopBGM();
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        oStop();
         
         document.getElementById('game-panel-millionaire').classList.add('hidden');
+        document.getElementById('papan-skor-panel').classList.add('hidden');
         document.getElementById('btn-back-menu').classList.add('hidden');
         document.getElementById('home-panel').classList.remove('hidden');
       }
@@ -1170,9 +1864,10 @@
     function downloadSkorCSV() {
       if (daftarPeserta.length === 0) return;
       const sorted = [...daftarPeserta].sort((a, b) => b.skor - a.skor);
-      let csv = "data:text/csv;charset=utf-8,Peringkat,Nama Kelompok/Peserta,Level Tercapai,Total Poin (Rp),Sisa Nyawa\n";
+      const labelSkorHeader = rewardMode === 'poin' ? 'Total Poin' : 'Total Poin (Rp)';
+      let csv = `data:text/csv;charset=utf-8,Peringkat,Nama Kelompok/Peserta,Level Tercapai,${labelSkorHeader},Sisa Nyawa\n`;
       sorted.forEach((p, idx) => {
-        csv += `${idx + 1},"${p.nama}",Level ${p.level + 1},${p.skor},${p.lives}\n`;
+        csv += `${idx + 1},"${p.nama}",${p.benar != null ? p.benar + '/' + p.tot + ' benar' : 'Level ' + (p.level + 1)},${p.skor},${p.lives}\n`;
       });
       const encoded = encodeURI(csv);
       const link = document.createElement("a");
@@ -1183,8 +1878,358 @@
       document.body.removeChild(link);
     }
 
+
+    /* ==================== MODE ONLINE (KELAS) — PeerJS / WebRTC ====================
+       Guru = host (layar proyektor). Siswa = buka QR/kode di HP masing-masing.
+       Semua siswa menjawab soal yang sama → tunggu semua jawab / waktu habis → papan skor soal → lanjut. */
+    const OU = ['https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js', 'https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js'];
+    const OQ = ['https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js', 'https://unpkg.com/qrcode-generator@1.4.4/qrcode.js'];
+    const OCOL = ['bg-rose-500', 'bg-sky-500', 'bg-amber-500', 'bg-emerald-600'];
+    const $o = id => document.getElementById(id);
+    const escO = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    function loadJS(list, test) {
+      return new Promise((res, rej) => {
+        if (test()) return res();
+        let i = 0;
+        const nx = () => {
+          if (i >= list.length) return rej();
+          const s = document.createElement('script');
+          s.src = list[i++]; s.onload = () => res(); s.onerror = nx;
+          document.head.appendChild(s);
+        };
+        nx();
+      });
+    }
+    function qrSvgO(t) {
+      try { if (!window.qrcode) return ''; const q = qrcode(0, 'M'); q.addData(t); q.make(); return q.createSvgTag(5, 2); } catch (e) { return ''; }
+    }
+    function genKode() { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += a[Math.random() * a.length | 0]; return s; }
+    const rndTok = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    const sendP = (p, m) => { try { p && p.conn && p.conn.open && p.conn.send(m); } catch (e) {} };
+
+    /* ---------- HOST (GURU) ---------- */
+    let OH = null;
+    function onlineBuka() {
+      ['home-panel', 'game-panel-millionaire', 'papan-skor-panel'].forEach(i => $o(i).classList.add('hidden'));
+      $o('btn-back-menu').classList.remove('hidden');
+      $o('online-panel').classList.remove('hidden');
+      const t = parseInt($o('select-waktu').value) || 0;
+      if (OH) oStop(true);
+      OH = { code: null, peer: null, ok: false, err: '', players: [], ph: 'lobby', qn: -1, tot: Math.min(10, Math.max(1, bankSoalMaster.length ? 10 : 1)), tm: t > 0 ? t : 20, url: localStorage.getItem('wwtbm_url') || '', tk: null, qmsg: null, lastTick: 0 };
+      oInit(); oRender();
+    }
+    function oInit() {
+      const H = OH;
+      loadJS(OU, () => window.Peer).then(() => {
+        if (OH !== H) return;
+        H.code = genKode();
+        const pe = new Peer('wwtbm-' + H.code); H.peer = pe;
+        pe.on('open', () => { H.ok = true; H.err = ''; if (OH === H) oRender(); });
+        pe.on('connection', c => oConn(c));
+        pe.on('disconnected', () => { try { pe.reconnect(); } catch (e) {} });
+        pe.on('error', e => {
+          if (e.type === 'unavailable-id') { try { pe.destroy(); } catch (x) {} oInit(); }
+          else { H.err = 'Koneksi ke server perantara bermasalah (' + e.type + ')'; if (OH === H) oRender(); }
+        });
+      }).catch(() => { H.err = 'PeerJS gagal dimuat — butuh koneksi internet'; if (OH === H) oRender(); });
+    }
+    function oStop(keepPanel) {
+      if (!OH) return;
+      clearInterval(OH.tk);
+      try { OH.peer && OH.peer.destroy(); } catch (e) {}
+      OH = null;
+      if (!keepPanel) $o('online-panel').classList.add('hidden');
+    }
+    function oBase() { return /^https?:/.test(location.protocol) ? location.origin + location.pathname : (OH.url || ''); }
+    function oJoinUrl() { const b = oBase(); return b && OH.code ? b + '?join=' + OH.code : ''; }
+    function oConn(c) {
+      c.on('data', m => oMsg(c, m));
+      const dr = () => { if (c._p && c._p.conn === c) { c._p.on = false; if (OH) { oRender(); oCheckAll(); } } };
+      c.on('close', dr); c.on('error', dr);
+    }
+    function oMsg(c, m) {
+      const H = OH; if (!H || !m || typeof m !== 'object') return;
+      if (m.t === 'join') {
+        let p = m.tok && H.players.find(x => x.tok === m.tok);
+        if (p) { p.conn = c; p.on = true; c._p = p; }
+        else {
+          let nm = String(m.name || '').trim().slice(0, 16) || 'Siswa', base = nm, n = 2;
+          while (H.players.some(x => x.n === nm)) nm = base + ' ' + n++;
+          p = { n: nm, tok: rndTok(), conn: c, on: true, skor: 0, benar: 0, ans: null, last: null };
+          H.players.push(p); c._p = p;
+        }
+        sendP(p, { t: 'joined', n: p.n, tok: p.tok });
+        oPush(p); oRender();
+      } else if (m.t === 'ans') {
+        const p = c._p;
+        if (!p || H.ph !== 'q' || m.qn !== H.qn || p.ans || !Number.isInteger(m.k) || m.k < 0 || m.k >= H.opts.length) return;
+        const left = Math.max(0, (H.deadline - Date.now()) / 1000);
+        p.ans = { k: m.k, left };
+        oCount(); oCheckAll();
+      }
+    }
+    function oPush(p) {
+      const H = OH;
+      if (H.ph === 'lobby') sendP(p, { t: 'lobby' });
+      else if (H.ph === 'q') {
+        if (p.ans) sendP(p, { t: 'wait', sel: p.ans.k });
+        else sendP(p, Object.assign({}, H.qmsg, { tl: Math.max(0, H.deadline - Date.now()) / 1000 }));
+      } else if (H.ph === 'rev') sendP(p, oRevMsg(p, oRank()));
+      else if (H.ph === 'end') sendP(p, oEndMsg(p, oRank()));
+    }
+    const oRank = () => [...OH.players].sort((a, b) => b.skor - a.skor);
+    const oOnline = () => OH.players.filter(p => p.on);
+    function oKick(i) {
+      const p = OH.players[i]; if (!p) return;
+      sendP(p, { t: 'kick' }); try { p.conn && p.conn.close(); } catch (e) {}
+      OH.players.splice(i, 1); oRender();
+    }
+    function oSetTot(n) { OH.tot = n; oRender(); }
+    function oSetTm(n) { OH.tm = n; oRender(); }
+    function oSetUrl(v) { OH.url = v.trim(); localStorage.setItem('wwtbm_url', OH.url); oRender(); }
+
+    function oMulai() {
+      const H = OH;
+      if (!bankSoalMaster.length) return alert('Bank soal masih kosong. Tambahkan soal lewat Pengaturan.');
+      if (!H.players.length) return alert('Belum ada siswa yang bergabung.');
+      antreanSoalPerLevel = Array(15).fill(null); posisiAntreanSoalPerLevel = Array(15).fill(0); usedQuestionsSet.clear();
+      H.players.forEach(p => { p.skor = 0; p.benar = 0; p.ans = null; p.last = null; });
+      H.qn = -1; playBGM(); oNext();
+    }
+    function oNext() {
+      const H = OH;
+      if (H.qn + 1 >= H.tot) return oEnd();
+      H.qn++;
+      const soal = ambilSoalUntukLevel(H.qn);
+      const benarTeks = soal.pilihan[soal.jawabanBenar];
+      const arr = acakDaftarSoal(soal.pilihan);
+      H.soal = soal; H.opts = arr; H.ci = arr.indexOf(benarTeks);
+      H.players.forEach(p => { p.ans = null; });
+      H.base = getActiveLadderValues()[Math.min(14, H.qn)];
+      H.ph = 'q'; H.deadline = Date.now() + H.tm * 1000; H.lastTick = H.tm + 1;
+      H.qmsg = { t: 'q', qn: H.qn, tot: H.tot, q: soal.pertanyaan, o: arr, img: soal.gambar && soal.gambar.length < 350000 ? soal.gambar : '', tl: H.tm, tm: H.tm, pts: formatSkorDisplay(H.base) };
+      H.players.forEach(p => { if (p.on) sendP(p, H.qmsg); });
+      clearInterval(H.tk); H.tk = setInterval(oTick, 250);
+      oRender();
+    }
+    function oTick() {
+      const H = OH; if (!H || H.ph !== 'q') return;
+      const left = Math.ceil((H.deadline - Date.now()) / 1000);
+      const el = $o('oh-timer'); if (el) el.innerText = Math.max(0, left);
+      const bar = $o('oh-bar'); if (bar) bar.style.width = Math.max(0, (H.deadline - Date.now()) / (H.tm * 10)) + '%';
+      if (left <= 5 && left > 0 && left < H.lastTick) playSoundTick();
+      H.lastTick = left;
+      if (Date.now() >= H.deadline) oReveal();
+    }
+    function oCount() {
+      const H = OH, on = oOnline(), d = on.filter(p => p.ans).length;
+      const t = $o('oh-cnt'); if (t) t.innerText = d + ' / ' + on.length + ' siswa sudah menjawab';
+      const b = $o('oh-cbar'); if (b) b.style.width = (on.length ? d / on.length * 100 : 0) + '%';
+    }
+    function oCheckAll() {
+      const H = OH; if (!H || H.ph !== 'q') return;
+      const on = oOnline();
+      if (on.length && on.every(p => p.ans)) oReveal();
+    }
+    function oReveal() {
+      const H = OH; if (!H || H.ph !== 'q') return;
+      clearInterval(H.tk); stopSoundTick(); H.ph = 'rev';
+      H.cnt = [0, 0, 0, 0];
+      H.players.forEach(p => {
+        if (p.ans) {
+          H.cnt[p.ans.k]++;
+          const ok = p.ans.k === H.ci;
+          const f = 0.5 + 0.5 * (p.ans.left / H.tm);
+          let gain = ok ? H.base * f : 0;
+          gain = rewardMode === 'poin' ? Math.round(gain) : Math.round(gain / 1000) * 1000;
+          p.skor += gain; if (ok) p.benar++;
+          p.last = { ok, gain, k: p.ans.k };
+        } else p.last = { ok: false, gain: 0, k: -1 };
+      });
+      const rk = oRank();
+      H.players.forEach(p => { if (p.on) sendP(p, oRevMsg(p, rk)); });
+      oRender();
+    }
+    function oRevMsg(p, rk) {
+      const H = OH, l = p.last || { ok: false, gain: 0, k: -1 };
+      return { t: 'rev', qn: H.qn, a: H.ci, atxt: H.opts[H.ci], sel: l.k, ok: l.ok, gain: l.gain, skor: p.skor, fmt: rewardMode, rank: rk.indexOf(p) + 1, n: rk.length, last: H.qn + 1 >= H.tot,
+        top: rk.slice(0, 5).map(x => [x.n, x.skor, x.last ? x.last.ok : false]) };
+    }
+    function oEndMsg(p, rk) { return { t: 'end', fmt: rewardMode, tot: OH.tot, me: rk.indexOf(p), rank: rk.slice(0, 10).map(x => [x.n, x.skor, x.benar]) }; }
+    function oEnd() {
+      const H = OH; clearInterval(H.tk); stopSoundTick(); H.ph = 'end';
+      const rk = oRank();
+      H.players.forEach(p => { if (p.on) sendP(p, oEndMsg(p, rk)); });
+      daftarPeserta = rk.map(p => ({ nama: p.n, skor: p.skor, level: 0, lives: 0, benar: p.benar, tot: H.tot, status: 'aktif', lifelines: {} }));
+      $o('online-panel').classList.add('hidden');
+      tampilkanPapanSkorAkhir();
+    }
+    function oAkhiri() { if (confirm('Akhiri permainan sekarang dan buka papan skor akhir?')) oEnd(); }
+
+    function oRender() {
+      const H = OH; if (!H) return;
+      const b = $o('online-body'), fmt = formatSkorSingkat;
+      if (H.ph === 'lobby') {
+        const u = oJoinUrl(), qr = u ? qrSvgO(u) : '';
+        if (u && !qr && !window.qrcode && !H.qrTry) { H.qrTry = true; loadJS(OQ, () => window.qrcode).then(() => { if (OH === H && H.ph === 'lobby') oRender(); }).catch(() => {}); }
+        const web = /^https?:/.test(location.protocol);
+        const chip = (v, cur, fn) => `<button onclick="${fn}(${v})" class="px-4 py-1.5 rounded-lg border font-bold text-xs ${v === cur ? 'border-amber-500 bg-amber-100 text-amber-800' : 'border-slate-300 bg-white text-slate-600'}">${v}</button>`;
+        b.innerHTML = `<div class="light-card gold-glow-border rounded-3xl p-6 md:p-8 flex flex-col gap-5">
+          <div class="text-center"><h2 class="font-montserrat font-black text-2xl text-slate-900">🌐 MODE ONLINE — RUANG KELAS</h2>
+          <p class="text-xs text-slate-500 font-semibold">Siswa scan QR / masukkan kode di HP. Soal muncul di layar masing-masing.</p></div>
+          ${H.err ? `<p class="text-center text-rose-600 font-bold text-sm">⚠️ ${escO(H.err)}</p>` : !H.ok ? '<p class="text-center font-bold text-slate-500">⏳ Membuat ruangan…</p>' : `
+          <div class="flex flex-wrap gap-6 items-center justify-center">
+            ${qr ? `<div class="bg-white rounded-2xl p-2 border-2 border-sky-300" style="width:210px;height:210px">${qr}</div>` : ''}
+            <div class="text-center"><div class="text-xs font-bold text-sky-600 uppercase">Kode ruangan</div>
+            <div class="font-montserrat font-black text-6xl tracking-[.2em] text-slate-900">${H.code}</div>
+            ${u ? `<div class="text-xs text-slate-600 max-w-xs break-all mt-1">atau buka:<br><b>${escO(u)}</b></div>` : ''}</div>
+          </div>
+          ${web ? '' : `<div class="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-slate-700">⚠️ File ini dibuka dari komputer, HP siswa belum bisa membukanya. Unggah file (beserta mp3/gambar) ke hosting gratis (GitHub Pages / Netlify / Cloudflare Pages), lalu tempel alamatnya:
+            <input class="w-full mt-2 p-2 rounded-lg border border-slate-300" placeholder="https://contoh.github.io/who-wants/" value="${escO(H.url)}" onchange="oSetUrl(this.value)"></div>`}`}
+          <div class="grid sm:grid-cols-2 gap-4 text-xs font-bold text-slate-700">
+            <div>Jumlah soal<div class="flex gap-2 mt-1">${[5, 10, 15].map(v => chip(v, H.tot, 'oSetTot')).join('')}</div></div>
+            <div>Waktu per soal (detik)<div class="flex gap-2 mt-1 flex-wrap">${[10, 15, 20, 30, 45, 60].map(v => chip(v, H.tm, 'oSetTm')).join('')}</div></div>
+          </div>
+          <p class="text-[11px] text-slate-500">Skor tiap soal = nilai level soal × bonus kecepatan (menjawab lebih cepat → poin lebih besar). Jenis hadiah (uang/poin) & pengaturan soal per level mengikuti menu Pengaturan.</p>
+          <div><div class="font-bold text-sm text-slate-800 mb-2">👥 Siswa bergabung: ${H.players.length}</div>
+            <div class="flex flex-wrap gap-2 max-h-48 overflow-y-auto">${H.players.map((p, i) => `<span class="px-3 py-1.5 rounded-full bg-sky-100 border border-sky-300 text-xs font-bold text-sky-900 flex items-center gap-2">${p.on ? '🟢' : '⚪'} ${escO(p.n)}<button onclick="oKick(${i})" class="text-rose-600">✖</button></span>`).join('') || '<span class="text-xs text-slate-400">Belum ada siswa…</span>'}</div></div>
+          <button onclick="oMulai()" ${H.players.length ? '' : 'disabled'} class="mx-auto px-10 py-3 rounded-full bg-amber-400 hover:bg-amber-300 disabled:opacity-40 text-slate-950 font-montserrat font-black tracking-wider shadow-lg border-2 border-amber-500">MULAI KUIS 🚀</button></div>`;
+        return;
+      }
+      const rev = H.ph === 'rev', rk = oRank(), tot = H.players.length;
+      const optsHtml = H.opts.map((o, i) => `<div class="wwtbm-shape wwtbm-btn pointer-events-none p-4 flex items-center gap-3 font-bold text-xs md:text-sm ${rev ? (i === H.ci ? 'correct-ans' : '') : ''}" style="${rev && i !== H.ci ? 'opacity:.45' : ''}">
+        <span class="text-amber-600 font-extrabold">${abjad[i]}:</span><span class="flex-1">${escO(o)}</span>${rev ? `<span class="font-black">${H.cnt[i]} 👤</span>` : ''}</div>`).join('');
+      const on = oOnline(), done = on.filter(p => p.ans).length;
+      const side = rk.map((p, i) => `<div class="p-2 rounded-xl border flex justify-between items-center text-[11px] font-bold ${rev && p.last && p.last.ok ? 'bg-emerald-50 border-emerald-300' : rev ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-200'}">
+        <span class="truncate max-w-[120px]"><span class="text-amber-700 mr-1">#${i + 1}</span>${p.on ? '' : '⚪ '}${escO(p.n)}${rev ? (p.last && p.last.ok ? ' ✅' : p.last && p.last.k < 0 ? ' ⏱️' : ' ❌') : (p.ans ? ' ✔️' : '')}</span>
+        <span class="text-right text-amber-700">${rev && p.last && p.last.gain ? `<span class="text-emerald-600">+${fmt(p.last.gain)}</span> ` : ''}${fmt(p.skor)}</span></div>`).join('');
+      b.innerHTML = `<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="lg:col-span-3 light-card gold-glow-border rounded-3xl p-6 flex flex-col gap-4">
+          <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-200 pb-3">
+            <div><div class="text-[10px] text-amber-700 font-bold uppercase tracking-widest">Soal ${H.qn + 1} dari ${H.tot} • Hadiah ${formatSkorDisplay(H.base)}</div>
+              <div class="font-montserrat font-black text-lg text-slate-900">${rev ? '📊 Hasil Soal Ini' : '✍️ Siswa sedang menjawab'}</div></div>
+            <div class="flex gap-2 items-center">
+              ${rev ? `<button onclick="oNext()" class="px-5 h-10 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black shadow">${H.qn + 1 >= H.tot ? '🏆 Papan Skor Akhir' : 'Soal Berikutnya ➡️'}</button>`
+                : `<button onclick="oReveal()" class="px-3 h-10 rounded-xl bg-sky-600 text-white text-xs font-black">⏩ Tampilkan Jawaban</button>
+              <div id="oh-timer" class="w-12 h-12 rounded-full bg-amber-400 border-2 border-white flex items-center justify-center font-montserrat font-black text-xl text-slate-950 shadow">${Math.max(0, Math.ceil((H.deadline - Date.now()) / 1000))}</div>`}
+              <button onclick="oAkhiri()" class="px-3 h-10 rounded-xl bg-purple-600 text-white text-xs font-black">🏁 Akhiri</button>
+            </div>
+          </div>
+          ${rev ? '' : `<div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div id="oh-bar" class="h-full bg-amber-400" style="width:100%"></div></div>`}
+          <div class="bg-gradient-to-b from-sky-900 to-slate-900 border-2 border-amber-400 wwtbm-shape p-6 text-center flex flex-col items-center gap-3 min-h-[140px] justify-center">
+            ${H.qmsg.img ? `<img src="${escO(H.qmsg.img)}" class="max-h-48 max-w-xs rounded-lg border-2 border-amber-400 object-contain bg-white" onerror="this.style.display='none'">` : ''}
+            <div class="font-montserrat font-extrabold text-base md:text-xl text-white max-w-2xl">${escO(H.qmsg.q)}</div></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${optsHtml}</div>
+          ${rev ? `<div class="text-xs font-bold text-slate-600 text-center">✅ ${H.players.filter(p => p.last && p.last.ok).length} benar • ❌ ${H.players.filter(p => p.last && !p.last.ok && p.last.k >= 0).length} salah • ⏱️ ${H.players.filter(p => p.last && p.last.k < 0).length} tidak menjawab</div>`
+            : `<div><div id="oh-cnt" class="text-center text-xs font-bold text-slate-600 mb-1">${done} / ${on.length} siswa sudah menjawab</div><div class="h-2 bg-slate-200 rounded-full overflow-hidden"><div id="oh-cbar" class="h-full bg-emerald-500" style="width:${on.length ? done / on.length * 100 : 0}%"></div></div></div>`}
+        </div>
+        <div class="light-card rounded-3xl p-4 flex flex-col gap-2 max-h-[640px]">
+          <div class="font-montserrat font-black text-sm text-amber-800 uppercase tracking-wider">${rev ? '🏅 Papan Skor' : '👥 Peringkat'} (${tot})</div>
+          <div class="space-y-1.5 overflow-y-auto pr-1">${side}</div></div></div>`;
+    }
+
+    /* ---------- SISWA (HP) ---------- */
+    const JOIN = (new URLSearchParams(location.search).get('join') || '').trim().toUpperCase();
+    let C = { st: 'name', name: '', tok: null, q: null, qn: 0, sel: null, tlEnd: 0, tm: 20, lost: false, rv: null, end: null, err: '' };
+    function sInit() {
+      $o('main-wrap').style.display = 'none'; $o('student-app').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      try { C.tok = localStorage.getItem('wwtbm_tok_' + JOIN); C.name = localStorage.getItem('wwtbm_name') || ''; } catch (e) {}
+      setInterval(sTick, 100);
+      if (C.tok && C.name) sConnect(); else sR();
+    }
+    function sJoin() {
+      const v = ($o('sn') || {}).value; C.name = (v || '').trim().slice(0, 16); if (!C.name) return;
+      try { localStorage.setItem('wwtbm_name', C.name); } catch (e) {}
+      sConnect();
+    }
+    function sConnect() {
+      C.st = 'conn'; sR();
+      loadJS(OU, () => window.Peer).then(() => {
+        const pe = new Peer(); C.peer = pe;
+        pe.on('open', () => {
+          const c = pe.connect('wwtbm-' + JOIN, { reliable: true }); C.conn = c;
+          c.on('open', () => c.send({ t: 'join', name: C.name, tok: C.tok }));
+          c.on('data', sMsg); c.on('close', sLost); c.on('error', sLost);
+        });
+        pe.on('error', e => {
+          if (e.type === 'peer-unavailable') { C.st = 'err'; C.nore = true; C.err = 'Kode ruangan "' + JOIN + '" tidak ditemukan. Periksa kode atau minta guru membuat ruangan lagi.'; sR(); }
+          else sLost();
+        });
+      }).catch(() => { C.st = 'err'; C.err = 'Tidak bisa memuat PeerJS — periksa koneksi internet'; sR(); });
+    }
+    function sLost() {
+      if (C.st === 'err' || C.st === 'kick') return;
+      C.lost = true; sR(); clearTimeout(C.rt);
+      C.rt = setTimeout(() => { try { C.peer && C.peer.destroy(); } catch (e) {} sConnect(); }, 2000);
+    }
+    function sMsg(m) {
+      if (!m || !m.t) return; C.lost = false;
+      if (m.t === 'joined') { C.name = m.n; C.tok = m.tok; try { localStorage.setItem('wwtbm_tok_' + JOIN, m.tok); } catch (e) {} if (!['q', 'wait', 'rev', 'end'].includes(C.st)) C.st = 'lobby'; }
+      else if (m.t === 'lobby') C.st = 'lobby';
+      else if (m.t === 'kick') C.st = 'kick';
+      else if (m.t === 'q') { C.st = 'q'; C.q = m; C.qn = m.qn; C.sel = null; C.tm = m.tm; C.tlEnd = performance.now() + m.tl * 1000; }
+      else if (m.t === 'wait') { C.st = 'wait'; C.sel = m.sel; }
+      else if (m.t === 'rev') { C.st = 'rev'; C.rv = m; try { navigator.vibrate && navigator.vibrate(m.ok ? 60 : [120, 60, 120]); } catch (e) {} }
+      else if (m.t === 'end') { C.st = 'end'; C.end = m; }
+      sR();
+    }
+    function sAns(k) {
+      if (C.st !== 'q' || !C.conn || performance.now() > C.tlEnd) return;
+      C.sel = k; C.st = 'wait';
+      try { C.conn.send({ t: 'ans', qn: C.qn, k }); } catch (e) {}
+      sR();
+    }
+    function sTick() {
+      if (C.st !== 'q') return;
+      const left = Math.max(0, (C.tlEnd - performance.now()) / 1000), b = $o('sb'), t = $o('st');
+      if (b) b.style.width = Math.min(100, left / C.tm * 100) + '%';
+      if (t) t.innerText = '⏱ ' + Math.ceil(left);
+      if (left <= 0) { C.st = 'wait'; C.sel = -1; sR(); }
+    }
+    const sFmt = (v, f) => f === 'poin' ? v.toLocaleString('id-ID') + ' Poin' : 'Rp ' + v.toLocaleString('id-ID');
+    function sView() {
+      const w = h => `<div class="min-h-full flex flex-col items-center justify-center text-center gap-3 p-5 max-w-md mx-auto">${h}</div>`;
+      if (C.st === 'name') return w(`<div class="text-6xl">💰</div><h2 class="font-montserrat font-black text-2xl text-amber-300">WHO WANTS TO BE A MILLIONAIRE</h2><p>Kode ruangan: <b class="tracking-widest text-2xl">${escO(JOIN)}</b></p>
+        <input id="sn" maxlength="16" placeholder="Tulis namamu" value="${escO(C.name)}" class="w-full p-4 rounded-2xl text-slate-900 text-center text-xl font-bold"><button onclick="sJoin()" class="w-full py-4 rounded-2xl bg-amber-400 text-slate-950 font-black text-lg">🚀 GABUNG</button>`);
+      if (C.st === 'conn') return w('<div class="text-5xl animate-bounce">📡</div><h3 class="font-bold">Menghubungkan ke ruangan ' + escO(JOIN) + '…</h3>');
+      if (C.st === 'err') return w(`<div class="text-5xl">⚠️</div><p>${escO(C.err)}</p>${C.nore ? '' : '<button onclick="sConnect()" class="px-6 py-3 rounded-xl bg-amber-400 text-slate-950 font-bold">🔄 Coba lagi</button>'}<button onclick="location.search=''" class="px-6 py-3 rounded-xl bg-white/20 font-bold">🏠 Keluar</button>`);
+      if (C.st === 'kick') return w(`<div class="text-5xl">👋</div><p>Kamu dikeluarkan dari ruangan oleh guru.</p><button onclick="try{localStorage.removeItem('wwtbm_tok_${escO(JOIN)}')}catch(e){}location.search=''" class="px-6 py-3 rounded-xl bg-white/20 font-bold">🏠 Keluar</button>`);
+      if (C.st === 'lobby') return w(`<div class="text-6xl animate-bounce">🙋</div><h2 class="font-montserrat font-black text-2xl">${escO(C.name)}</h2><p class="text-emerald-300 font-bold">✅ Terhubung! Menunggu guru memulai kuis…</p>`);
+      if (C.st === 'wait') { const q = C.q; return w(`<div class="text-5xl animate-pulse">⏳</div><h3 class="font-bold text-lg">${C.sel >= 0 ? 'Jawaban terkirim!' : 'Waktu habis!'}</h3>
+        ${C.sel >= 0 && q ? `<div class="px-5 py-3 rounded-2xl ${OCOL[C.sel]} font-bold">${abjad[C.sel]}. ${escO(q.o[C.sel])}</div>` : ''}<p class="text-sm opacity-80">Menunggu teman lain menjawab…</p>`); }
+      if (C.st === 'rev') {
+        const r = C.rv, q = C.q;
+        return w(`<div class="text-6xl">${r.ok ? '✅' : r.sel < 0 ? '⏱️' : '❌'}</div><h2 class="font-montserrat font-black text-3xl ${r.ok ? 'text-emerald-300' : 'text-rose-300'}">${r.ok ? 'BENAR!' : r.sel < 0 ? 'TIDAK MENJAWAB' : 'SALAH'}</h2>
+          ${r.ok ? `<div class="text-amber-300 font-black text-xl">+ ${sFmt(r.gain, r.fmt)}</div>` : `<div class="text-sm">Jawaban benar: <b>${abjad[r.a]}. ${escO(r.atxt)}</b></div>`}
+          <div class="grid grid-cols-2 gap-3 w-full"><div class="bg-white/10 rounded-2xl p-3"><div class="text-xs opacity-70">Total skor</div><b>${sFmt(r.skor, r.fmt)}</b></div><div class="bg-white/10 rounded-2xl p-3"><div class="text-xs opacity-70">Peringkat</div><b class="text-xl">#${r.rank} <span class="text-xs opacity-70">dari ${r.n}</span></b></div></div>
+          <div class="w-full text-left space-y-1 text-sm">${r.top.map((t, i) => `<div class="flex justify-between bg-white/10 rounded-xl px-3 py-1.5"><span>${i + 1}. ${t[2] ? '✅' : '❌'} ${escO(t[0])}</span><b>${sFmt(t[1], r.fmt)}</b></div>`).join('')}</div>
+          <p class="text-xs opacity-70">${r.last ? 'Kuis selesai, menunggu hasil akhir…' : 'Menunggu guru lanjut ke soal berikutnya…'}</p>`);
+      }
+      if (C.st === 'end') {
+        const e = C.end;
+        return w(`<h2 class="font-montserrat font-black text-2xl text-amber-300">🏆 HASIL AKHIR</h2><p class="text-sm">Kamu peringkat <b class="text-xl">#${e.me + 1}</b></p>
+          <div class="w-full text-left space-y-1 text-sm">${e.rank.map((t, i) => `<div class="flex justify-between rounded-xl px-3 py-1.5 ${i === e.me ? 'bg-amber-400 text-slate-950 font-black' : 'bg-white/10'}"><span>${['🥇', '🥈', '🥉'][i] || i + 1 + '.'} ${escO(t[0])} <small>(${t[2]}/${e.tot} benar)</small></span><b>${sFmt(t[1], e.fmt)}</b></div>`).join('')}</div>`);
+      }
+      const q = C.q || { o: [], q: '' };
+      return `<div class="min-h-full flex flex-col gap-3 p-3 max-w-xl mx-auto"><div class="flex justify-between items-center text-xs font-bold"><span>Soal ${q.qn + 1}/${q.tot}</span><span class="text-amber-300">Hadiah ${escO(q.pts)}</span><span id="st">⏱ ${Math.max(0, Math.ceil((C.tlEnd - performance.now()) / 1000))}</span></div>
+        <div class="h-2 bg-white/20 rounded-full overflow-hidden"><div id="sb" class="h-full bg-amber-400" style="width:${Math.min(100, Math.max(0, (C.tlEnd - performance.now()) / 1000) / C.tm * 100)}%"></div></div>
+        ${q.img ? `<img src="${escO(q.img)}" class="max-h-40 mx-auto rounded-xl bg-white object-contain" onerror="this.style.display='none'">` : ''}
+        <div class="font-montserrat font-extrabold text-lg text-center py-2">${escO(q.q)}</div>
+        <div class="grid grid-cols-1 gap-3">${q.o.map((o, k) => `<button onpointerdown="sAns(${k})" class="${OCOL[k]} rounded-2xl p-4 text-left font-bold text-base active:scale-95 transition"><span class="inline-block w-8 font-black">${abjad[k]}</span>${escO(o)}</button>`).join('')}</div></div>`;
+    }
+    function sR() {
+      let h = sView();
+      if (C.lost) h += '<div class="fixed inset-0 bg-slate-900/80 flex items-center justify-center text-center z-50"><div><div class="text-4xl">📡</div><b>Terputus… menyambung ulang</b></div></div>';
+      $o('student-app').innerHTML = h;
+    }
+    document.addEventListener('DOMContentLoaded', () => { if (JOIN) sInit(); });
+
     window.onload = function() {
       loadBankSoal();
+      muatPengaturanSoalLevel();
+      document.getElementById('crud-gambar-path').addEventListener('input', updatePreviewGambarCRUD);
+      document.getElementById('input-soal-massal').addEventListener('input', updatePreviewImportMassal);
     };
   </script>
 </body>
