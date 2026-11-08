@@ -2017,7 +2017,7 @@
       const left = Math.ceil((H.deadline - Date.now()) / 1000);
       const el = $o('oh-timer'); if (el) el.innerText = Math.max(0, left);
       const bar = $o('oh-bar'); if (bar) bar.style.width = Math.max(0, (H.deadline - Date.now()) / (H.tm * 10)) + '%';
-      if (left <= 5 && left > 0 && left < H.lastTick) playSoundTick();
+      if (left > 0 && left < H.lastTick) playSoundTick();
       H.lastTick = left;
       if (Date.now() >= H.deadline) oReveal();
     }
@@ -2046,7 +2046,8 @@
           p.last = { ok, gain, k: p.ans.k };
         } else p.last = { ok: false, gain: 0, k: -1 };
       });
-      const rk = oRank();
+      const rk = oRank(), nAns = H.players.filter(p => p.ans).length, nOk = H.players.filter(p => p.last && p.last.ok).length;
+      if (nAns && nOk >= nAns / 2) playSoundCorrect(); else playSoundWrong();
       H.players.forEach(p => { if (p.on) sendP(p, oRevMsg(p, rk)); });
       oRender();
     }
@@ -2131,7 +2132,12 @@
     /* ---------- SISWA (HP) ---------- */
     const JOIN = (new URLSearchParams(location.search).get('join') || '').trim().toUpperCase();
     let C = { st: 'name', name: '', tok: null, q: null, qn: 0, sel: null, tlEnd: 0, tm: 20, lost: false, rv: null, end: null, err: '' };
+    const SA = { benar: new Audio('benar.mp3'), salah: new Audio('salah.mp3'), tick: new Audio('tick.mp3'), win: new Audio('winner.mp3') };
+    let sMute = false;
+    function sPlay(k) { if (sMute) return; try { const a = SA[k]; a.currentTime = 0; a.play().catch(() => {}); } catch (e) {} }
+    function sUnlock() { Object.values(SA).forEach(a => { try { a.muted = true; a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; }); } catch (e) {} }); }
     function sInit() {
+      document.addEventListener('pointerdown', sUnlock, { once: true });
       $o('main-wrap').style.display = 'none'; $o('student-app').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
       try { C.tok = localStorage.getItem('wwtbm_tok_' + JOIN); C.name = localStorage.getItem('wwtbm_name') || ''; } catch (e) {}
@@ -2139,6 +2145,7 @@
       if (C.tok && C.name) sConnect(); else sR();
     }
     function sJoin() {
+      sUnlock();
       const v = ($o('sn') || {}).value; C.name = (v || '').trim().slice(0, 16); if (!C.name) return;
       try { localStorage.setItem('wwtbm_name', C.name); } catch (e) {}
       sConnect();
@@ -2168,10 +2175,10 @@
       if (m.t === 'joined') { C.name = m.n; C.tok = m.tok; try { localStorage.setItem('wwtbm_tok_' + JOIN, m.tok); } catch (e) {} if (!['q', 'wait', 'rev', 'end'].includes(C.st)) C.st = 'lobby'; }
       else if (m.t === 'lobby') C.st = 'lobby';
       else if (m.t === 'kick') C.st = 'kick';
-      else if (m.t === 'q') { C.st = 'q'; C.q = m; C.qn = m.qn; C.sel = null; C.tm = m.tm; C.tlEnd = performance.now() + m.tl * 1000; }
+      else if (m.t === 'q') { C.st = 'q'; C.lt = 0; C.q = m; C.qn = m.qn; C.sel = null; C.tm = m.tm; C.tlEnd = performance.now() + m.tl * 1000; }
       else if (m.t === 'wait') { C.st = 'wait'; C.sel = m.sel; }
-      else if (m.t === 'rev') { C.st = 'rev'; C.rv = m; try { navigator.vibrate && navigator.vibrate(m.ok ? 60 : [120, 60, 120]); } catch (e) {} }
-      else if (m.t === 'end') { C.st = 'end'; C.end = m; }
+      else if (m.t === 'rev') { C.st = 'rev'; C.rv = m; sPlay(m.ok ? 'benar' : 'salah'); try { navigator.vibrate && navigator.vibrate(m.ok ? 60 : [120, 60, 120]); } catch (e) {} }
+      else if (m.t === 'end') { C.st = 'end'; C.end = m; sPlay('win'); }
       sR();
     }
     function sAns(k) {
@@ -2183,6 +2190,7 @@
     function sTick() {
       if (C.st !== 'q') return;
       const left = Math.max(0, (C.tlEnd - performance.now()) / 1000), b = $o('sb'), t = $o('st');
+      if (left > 0 && left <= 5 && Math.ceil(left) !== C.lt) { C.lt = Math.ceil(left); sPlay('tick'); }
       if (b) b.style.width = Math.min(100, left / C.tm * 100) + '%';
       if (t) t.innerText = '⏱ ' + Math.ceil(left);
       if (left <= 0) { C.st = 'wait'; C.sel = -1; sR(); }
@@ -2196,15 +2204,13 @@
       if (C.st === 'err') return w(`<div class="text-5xl">⚠️</div><p>${escO(C.err)}</p>${C.nore ? '' : '<button onclick="sConnect()" class="px-6 py-3 rounded-xl bg-amber-400 text-slate-950 font-bold">🔄 Coba lagi</button>'}<button onclick="location.search=''" class="px-6 py-3 rounded-xl bg-white/20 font-bold">🏠 Keluar</button>`);
       if (C.st === 'kick') return w(`<div class="text-5xl">👋</div><p>Kamu dikeluarkan dari ruangan oleh guru.</p><button onclick="try{localStorage.removeItem('wwtbm_tok_${escO(JOIN)}')}catch(e){}location.search=''" class="px-6 py-3 rounded-xl bg-white/20 font-bold">🏠 Keluar</button>`);
       if (C.st === 'lobby') return w(`<div class="text-6xl animate-bounce">🙋</div><h2 class="font-montserrat font-black text-2xl">${escO(C.name)}</h2><p class="text-emerald-300 font-bold">✅ Terhubung! Menunggu guru memulai kuis…</p>`);
-      if (C.st === 'wait') { const q = C.q; return w(`<div class="text-5xl animate-pulse">⏳</div><h3 class="font-bold text-lg">${C.sel >= 0 ? 'Jawaban terkirim!' : 'Waktu habis!'}</h3>
-        ${C.sel >= 0 && q ? `<div class="px-5 py-3 rounded-2xl ${OCOL[C.sel]} font-bold">${abjad[C.sel]}. ${escO(q.o[C.sel])}</div>` : ''}<p class="text-sm opacity-80">Menunggu teman lain menjawab…</p>`); }
+      if (C.st === 'wait') { const q = C.q || { o: [], q: '' }; return sPage(`<div class="text-center"><div class="text-3xl animate-pulse">⏳</div><b>${C.sel >= 0 ? 'Jawaban terkirim! Menunggu teman lain…' : 'Waktu habis! Menunggu hasil…'}</b></div>`, q, 'wait'); }
       if (C.st === 'rev') {
-        const r = C.rv, q = C.q;
-        return w(`<div class="text-6xl">${r.ok ? '✅' : r.sel < 0 ? '⏱️' : '❌'}</div><h2 class="font-montserrat font-black text-3xl ${r.ok ? 'text-emerald-300' : 'text-rose-300'}">${r.ok ? 'BENAR!' : r.sel < 0 ? 'TIDAK MENJAWAB' : 'SALAH'}</h2>
-          ${r.ok ? `<div class="text-amber-300 font-black text-xl">+ ${sFmt(r.gain, r.fmt)}</div>` : `<div class="text-sm">Jawaban benar: <b>${abjad[r.a]}. ${escO(r.atxt)}</b></div>`}
-          <div class="grid grid-cols-2 gap-3 w-full"><div class="bg-white/10 rounded-2xl p-3"><div class="text-xs opacity-70">Total skor</div><b>${sFmt(r.skor, r.fmt)}</b></div><div class="bg-white/10 rounded-2xl p-3"><div class="text-xs opacity-70">Peringkat</div><b class="text-xl">#${r.rank} <span class="text-xs opacity-70">dari ${r.n}</span></b></div></div>
-          <div class="w-full text-left space-y-1 text-sm">${r.top.map((t, i) => `<div class="flex justify-between bg-white/10 rounded-xl px-3 py-1.5"><span>${i + 1}. ${t[2] ? '✅' : '❌'} ${escO(t[0])}</span><b>${sFmt(t[1], r.fmt)}</b></div>`).join('')}</div>
-          <p class="text-xs opacity-70">${r.last ? 'Kuis selesai, menunggu hasil akhir…' : 'Menunggu guru lanjut ke soal berikutnya…'}</p>`);
+        const r = C.rv, q = C.q || { o: [], q: '' };
+        return sPage(`<div class="text-center"><div class="text-5xl">${r.ok ? '✅' : r.sel < 0 ? '⏱️' : '❌'}</div><h2 class="font-montserrat font-black text-2xl ${r.ok ? 'text-emerald-300' : 'text-rose-300'}">${r.ok ? 'BENAR!' : r.sel < 0 ? 'TIDAK MENJAWAB' : 'SALAH'}</h2>${r.ok ? `<div class="text-amber-300 font-black text-lg">+ ${sFmt(r.gain, r.fmt)}</div>` : ''}</div>`, q, 'rev', `
+          <div class="grid grid-cols-2 gap-3"><div class="bg-white/10 rounded-2xl p-3 text-center"><div class="text-xs opacity-70">Total skor</div><b>${sFmt(r.skor, r.fmt)}</b></div><div class="bg-white/10 rounded-2xl p-3 text-center"><div class="text-xs opacity-70">Peringkat</div><b class="text-xl">#${r.rank} <span class="text-xs opacity-70">dari ${r.n}</span></b></div></div>
+          <div class="space-y-1 text-sm">${r.top.map((t, i) => `<div class="flex justify-between bg-white/10 rounded-xl px-3 py-1.5"><span>${i + 1}. ${t[2] ? '✅' : '❌'} ${escO(t[0])}</span><b>${sFmt(t[1], r.fmt)}</b></div>`).join('')}</div>
+          <p class="text-xs opacity-70 text-center">${r.last ? 'Kuis selesai, menunggu hasil akhir…' : 'Menunggu guru lanjut ke soal berikutnya…'}</p>`, r);
       }
       if (C.st === 'end') {
         const e = C.end;
@@ -2212,15 +2218,25 @@
           <div class="w-full text-left space-y-1 text-sm">${e.rank.map((t, i) => `<div class="flex justify-between rounded-xl px-3 py-1.5 ${i === e.me ? 'bg-amber-400 text-slate-950 font-black' : 'bg-white/10'}"><span>${['🥇', '🥈', '🥉'][i] || i + 1 + '.'} ${escO(t[0])} <small>(${t[2]}/${e.tot} benar)</small></span><b>${sFmt(t[1], e.fmt)}</b></div>`).join('')}</div>`);
       }
       const q = C.q || { o: [], q: '' };
-      return `<div class="min-h-full flex flex-col gap-3 p-3 max-w-xl mx-auto"><div class="flex justify-between items-center text-xs font-bold"><span>Soal ${q.qn + 1}/${q.tot}</span><span class="text-amber-300">Hadiah ${escO(q.pts)}</span><span id="st">⏱ ${Math.max(0, Math.ceil((C.tlEnd - performance.now()) / 1000))}</span></div>
-        <div class="h-2 bg-white/20 rounded-full overflow-hidden"><div id="sb" class="h-full bg-amber-400" style="width:${Math.min(100, Math.max(0, (C.tlEnd - performance.now()) / 1000) / C.tm * 100)}%"></div></div>
-        ${q.img ? `<img src="${escO(q.img)}" class="max-h-40 mx-auto rounded-xl bg-white object-contain" onerror="this.style.display='none'">` : ''}
-        <div class="font-montserrat font-extrabold text-lg text-center py-2">${escO(q.q)}</div>
-        <div class="grid grid-cols-1 gap-3">${q.o.map((o, k) => `<button onpointerdown="sAns(${k})" class="${OCOL[k]} rounded-2xl p-4 text-left font-bold text-base active:scale-95 transition"><span class="inline-block w-8 font-black">${abjad[k]}</span>${escO(o)}</button>`).join('')}</div></div>`;
+      return sPage(`<div class="flex justify-between items-center text-xs font-bold"><span>Soal ${q.qn + 1}/${q.tot}</span><span class="text-amber-300">Hadiah ${escO(q.pts)}</span><span id="st">⏱ ${Math.max(0, Math.ceil((C.tlEnd - performance.now()) / 1000))}</span></div>
+        <div class="h-2 bg-white/20 rounded-full overflow-hidden"><div id="sb" class="h-full bg-amber-400" style="width:${Math.min(100, Math.max(0, (C.tlEnd - performance.now()) / 1000) / C.tm * 100)}%"></div></div>`, q, 'q');
+    }
+    function sPage(top, q, mode, bottom, r) {
+      const opts = q.o.map((o, k) => {
+        let cls = '', st = '';
+        if (mode === 'wait' && C.sel === k) cls = 'selected';
+        if (mode === 'rev') { if (k === r.a) cls = 'correct-ans'; else if (k === r.sel) cls = 'wrong-ans'; else st = 'opacity:.4'; }
+        return `<button ${mode === 'q' ? `onpointerdown="sAns(${k})"` : ''} class="wwtbm-shape wwtbm-btn ${cls} ${mode === 'q' ? '' : 'pointer-events-none'} p-4 flex items-center gap-3 text-left font-bold text-sm w-full" style="${st}"><span class="text-amber-600 font-extrabold">${abjad[k]}:</span><span>${escO(o)}</span></button>`;
+      }).join('');
+      return `<div class="min-h-full flex flex-col gap-3 p-3 max-w-xl mx-auto">${top}
+        ${q.img ? `<img src="${escO(q.img)}" class="max-h-40 mx-auto rounded-lg border-2 border-amber-400 bg-white object-contain" onerror="this.style.display='none'">` : ''}
+        <div class="bg-gradient-to-b from-sky-900 to-slate-900 border-2 border-amber-400 wwtbm-shape p-5 text-center font-montserrat font-extrabold text-base">${escO(q.q)}</div>
+        <div class="grid grid-cols-1 gap-3">${opts}</div>${bottom || ''}</div>`;
     }
     function sR() {
       let h = sView();
       if (C.lost) h += '<div class="fixed inset-0 bg-slate-900/80 flex items-center justify-center text-center z-50"><div><div class="text-4xl">📡</div><b>Terputus… menyambung ulang</b></div></div>';
+      if (!['name', 'conn', 'err', 'kick'].includes(C.st)) h += `<button onclick="sMute=!sMute;sR()" class="fixed top-2 right-2 z-40 w-9 h-9 rounded-full bg-white/20 text-lg">${sMute ? '🔇' : '🔊'}</button>`;
       $o('student-app').innerHTML = h;
     }
     document.addEventListener('DOMContentLoaded', () => { if (JOIN) sInit(); });
