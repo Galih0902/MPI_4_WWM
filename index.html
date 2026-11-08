@@ -2133,11 +2133,23 @@
     const JOIN = (new URLSearchParams(location.search).get('join') || '').trim().toUpperCase();
     let C = { st: 'name', name: '', tok: null, q: null, qn: 0, sel: null, tlEnd: 0, tm: 20, lost: false, rv: null, end: null, err: '' };
     const SA = { benar: new Audio('benar.mp3'), salah: new Audio('salah.mp3'), tick: new Audio('tick.mp3'), win: new Audio('winner.mp3') };
-    let sMute = false;
-    function sPlay(k) { if (sMute) return; try { const a = SA[k]; a.currentTime = 0; a.play().catch(() => {}); } catch (e) {} }
-    function sUnlock() { Object.values(SA).forEach(a => { try { a.muted = true; a.play().then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; }); } catch (e) {} }); }
+    let sMute = false, sCtx = null, sUnlocked = false;
+    function sBeep(k) { /* cadangan: bunyi buatan bila mp3 tidak ada / gagal diputar */
+      try {
+        if (!sCtx) return; if (sCtx.state === 'suspended') sCtx.resume();
+        const seq = { tick: [[880, .06]], benar: [[660, .12], [880, .12], [1320, .3]], salah: [[220, .25], [165, .45]], win: [[523, .15], [659, .15], [784, .15], [1047, .6]] }[k]; let t = sCtx.currentTime;
+        seq.forEach(([f, d]) => { const o = sCtx.createOscillator(), g = sCtx.createGain(); o.type = k === 'salah' ? 'sawtooth' : 'sine'; o.frequency.value = f; g.gain.setValueAtTime(.25, t); g.gain.exponentialRampToValueAtTime(.001, t + d); o.connect(g); g.connect(sCtx.destination); o.start(t); o.stop(t + d); t += d; });
+      } catch (e) {}
+    }
+    function sPlay(k) { if (sMute) return; const a = SA[k]; try { a.currentTime = 0; const pr = a.play(); if (pr && pr.catch) pr.catch(() => sBeep(k)); } catch (e) { sBeep(k); } }
+    function sUnlock() {
+      if (!sCtx) { try { sCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+      try { sCtx && sCtx.resume(); } catch (e) {}
+      if (sUnlocked) return; sUnlocked = true;
+      Object.values(SA).forEach(a => { try { a.muted = true; const pr = a.play(); if (pr && pr.then) pr.then(() => { a.pause(); a.currentTime = 0; a.muted = false; }).catch(() => { a.muted = false; }); else a.muted = false; } catch (e) { a.muted = false; } });
+    }
     function sInit() {
-      document.addEventListener('pointerdown', sUnlock, { once: true });
+      ['click', 'touchend', 'pointerup'].forEach(ev => document.addEventListener(ev, sUnlock));
       $o('main-wrap').style.display = 'none'; $o('student-app').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
       try { C.tok = localStorage.getItem('wwtbm_tok_' + JOIN); C.name = localStorage.getItem('wwtbm_name') || ''; } catch (e) {}
@@ -2182,6 +2194,7 @@
       sR();
     }
     function sAns(k) {
+      sUnlock();
       if (C.st !== 'q' || !C.conn || performance.now() > C.tlEnd) return;
       C.sel = k; C.st = 'wait';
       try { C.conn.send({ t: 'ans', qn: C.qn, k }); } catch (e) {}
@@ -2226,7 +2239,7 @@
         let cls = '', st = '';
         if (mode === 'wait' && C.sel === k) cls = 'selected';
         if (mode === 'rev') { if (k === r.a) cls = 'correct-ans'; else if (k === r.sel) cls = 'wrong-ans'; else st = 'opacity:.4'; }
-        return `<button ${mode === 'q' ? `onpointerdown="sAns(${k})"` : ''} class="wwtbm-shape wwtbm-btn ${cls} ${mode === 'q' ? '' : 'pointer-events-none'} p-4 flex items-center gap-3 text-left font-bold text-sm w-full" style="${st}"><span class="text-amber-600 font-extrabold">${abjad[k]}:</span><span>${escO(o)}</span></button>`;
+        return `<button ${mode === 'q' ? `onclick="sAns(${k})"` : ''} class="wwtbm-shape wwtbm-btn ${cls} ${mode === 'q' ? '' : 'pointer-events-none'} p-4 flex items-center gap-3 text-left font-bold text-sm w-full" style="${st}"><span class="text-amber-600 font-extrabold">${abjad[k]}:</span><span>${escO(o)}</span></button>`;
       }).join('');
       return `<div class="min-h-full flex flex-col gap-3 p-3 max-w-xl mx-auto">${top}
         ${q.img ? `<img src="${escO(q.img)}" class="max-h-40 mx-auto rounded-lg border-2 border-amber-400 bg-white object-contain" onerror="this.style.display='none'">` : ''}
@@ -2236,6 +2249,7 @@
     function sR() {
       let h = sView();
       if (C.lost) h += '<div class="fixed inset-0 bg-slate-900/80 flex items-center justify-center text-center z-50"><div><div class="text-4xl">📡</div><b>Terputus… menyambung ulang</b></div></div>';
+      if (!sUnlocked && ['lobby', 'q', 'wait', 'rev'].includes(C.st)) h += `<button onclick="sUnlock();sPlay('tick');sR()" class="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 px-5 py-3 rounded-full bg-amber-400 text-slate-950 font-black text-sm shadow-lg">🔊 Ketuk untuk aktifkan suara</button>`;
       if (!['name', 'conn', 'err', 'kick'].includes(C.st)) h += `<button onclick="sMute=!sMute;sR()" class="fixed top-2 right-2 z-40 w-9 h-9 rounded-full bg-white/20 text-lg">${sMute ? '🔇' : '🔊'}</button>`;
       $o('student-app').innerHTML = h;
     }
